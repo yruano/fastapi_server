@@ -17,9 +17,8 @@ def get_member(db: Session, member_id: int):
     return member
 
 
-def create_member(db: Session, member_create: MemberCreate, user: User):
-    db_Member = Member(subject = member_create.subject,
-                           content = member_create.content,
+def create_member(db: Session, image: bytes, user: User):
+    db_Member = Member(image = image,
                            create_date = datetime.now(),
                            user = user)
     db.add(db_Member)
