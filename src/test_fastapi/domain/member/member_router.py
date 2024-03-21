@@ -9,8 +9,6 @@ from domain.user.user_router import get_current_user
 from models import User
 
 
-savefile: bytes
-
 router = APIRouter(
     prefix="/api/member",
 )
@@ -28,14 +26,10 @@ def member_detail(member_id: int, db: Session = Depends(get_db)):
     return member
 
 
-@router.post("/files/")
-async def create_file(file: UploadFile):
-    savefile = file
-    return {"file_size": file.filename}
-
-
 @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
-def member_create(_member_create: member_schema.MemberCreate,
-                    db: Session = Depends(get_db),
-                    current_user: User = Depends(get_current_user)):
-    member_crud.create_member(db = db, image = savefile, user = current_user)
+async def member_create(file: UploadFile,
+                        db: Session = Depends(get_db),
+                        current_user: User = Depends(get_current_user)):
+    contents = await file.read()
+    member_crud.create_member(db = db, _image = contents, user = current_user)
+    return {"file_size": file.filename}

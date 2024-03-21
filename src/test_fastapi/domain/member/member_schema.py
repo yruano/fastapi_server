@@ -13,7 +13,6 @@ class Member(BaseModel):
 
 class MemberCreate(BaseModel):
     image: bytes
-
     @field_validator('image')
     def not_empty(cls, v):
         if not v or not v.strip():
