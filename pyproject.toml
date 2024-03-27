@@ -6,13 +6,14 @@ authors = [
   {name = "yruano", email = "ckrmidjskk@naver.com"},
 ]
 dependencies = [
-  "fastapi>=0.110.0",
-  "alembic>=1.13.1",
-  "sqlalchemy>=2.0.28",
-  "pydantic[email]>=2.6.4",
-  "passlib[bcrypt]>=1.7.4",
-  "python-multipart>=0.0.9",
-  "python-jose[cryptography]>=3.3.0",
+    "fastapi>=0.110.0",
+    "alembic>=1.13.1",
+    "sqlalchemy>=2.0.28",
+    "pydantic[email]>=2.6.4",
+    "passlib[bcrypt]>=1.7.4",
+    "python-multipart>=0.0.9",
+    "python-jose[cryptography]>=3.3.0",
+    "pymysql>=1.1.0",
 ]
 requires-python = "==3.11.*"
 readme = "README.md"

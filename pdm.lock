@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:092c8df08de56cc924060ed226ff624d21afede8c7d0edfa0fe6193ba5d24716"
+content_hash = "sha256:6bff13adfc4713ccec07abd28c289bac344fff16845fe942248190cbb73db265"
 
 [[package]]
 name = "alembic"
@@ -395,6 +395,17 @@ dependencies = [
 files = [
     {file = "pydantic-2.6.4-py3-none-any.whl", hash = "sha256:cc46fce86607580867bdc3361ad462bab9c222ef042d3da86f2fb333e1d916c5"},
     {file = "pydantic-2.6.4.tar.gz", hash = "sha256:b1704e0847db01817624a6b86766967f552dd9dbf3afba4004409f908dcc84e6"},
+]
+
+[[package]]
+name = "pymysql"
+version = "1.1.0"
+requires_python = ">=3.7"
+summary = "Pure Python MySQL Driver"
+groups = ["default"]
+files = [
+    {file = "PyMySQL-1.1.0-py3-none-any.whl", hash = "sha256:8969ec6d763c856f7073c4c64662882675702efcb114b4bcbb955aea3a069fa7"},
+    {file = "PyMySQL-1.1.0.tar.gz", hash = "sha256:4f13a7df8bf36a51e81dd9f3605fede45a4878fe02f9236349fd82a3f0612f96"},
 ]
 
 [[package]]
