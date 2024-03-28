@@ -1,5 +1,7 @@
 from sqlalchemy import Column, Integer, String, LargeBinary, DateTime, ForeignKey
+from sqlalchemy.dialects.mysql import LONGBLOB
 from sqlalchemy.orm import relationship
+
 
 from database import Base
 
@@ -8,7 +10,7 @@ class Member(Base):
     __tablename__ = "member"
 
     id = Column(Integer, primary_key = True)
-    image = Column(LargeBinary, nullable = False)
+    image = Column(LargeBinary().with_variant(LONGBLOB, "mysql"), nullable = False)
     create_date = Column(DateTime, nullable = False)
     user_id = Column(Integer, ForeignKey("user.id"), nullable = True)
     user = relationship("User", backref = "member_users")

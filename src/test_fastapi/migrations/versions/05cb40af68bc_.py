@@ -1,18 +1,18 @@
 """empty message
 
-Revision ID: 6c9b33f83133
+Revision ID: 05cb40af68bc
 Revises: 
-Create Date: 2024-03-28 14:29:09.726169
+Create Date: 2024-03-28 15:27:36.421601
 
 """
 from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
-
+from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision: str = '6c9b33f83133'
+revision: str = '05cb40af68bc'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -23,7 +23,7 @@ def upgrade() -> None:
     op.create_table('user',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('username', sa.String(length=50), nullable=False),
-    sa.Column('password', sa.String(length=50), nullable=False),
+    sa.Column('password', sa.String(length=1000), nullable=False),
     sa.Column('email', sa.String(length=50), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_user')),
     sa.UniqueConstraint('email', name=op.f('uq_user_email')),
@@ -31,7 +31,7 @@ def upgrade() -> None:
     )
     op.create_table('member',
     sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('image', sa.LargeBinary(), nullable=False),
+    sa.Column('image', sa.LargeBinary().with_variant(mysql.LONGBLOB(), 'mysql'), nullable=False),
     sa.Column('create_date', sa.DateTime(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], name=op.f('fk_member_user_id_user')),

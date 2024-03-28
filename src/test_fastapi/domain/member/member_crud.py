@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from domain.member.member_schema import MemberCreate
 from models import Member, User
 from sqlalchemy.orm import Session
 
