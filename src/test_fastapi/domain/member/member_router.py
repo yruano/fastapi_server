@@ -1,3 +1,4 @@
+import base64
 from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.orm import Session
 
@@ -31,5 +32,6 @@ async def member_create(file: UploadFile,
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user)):
     contents = await file.read()
-    member_crud.create_member(db = db, _image = contents, user = current_user)
+    encoded_image = base64.b64encode(contents)
+    member_crud.create_member(db = db, _image = encoded_image, user = current_user)
     return {"file_size": file.filename}
