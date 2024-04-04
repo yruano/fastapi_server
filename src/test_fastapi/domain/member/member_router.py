@@ -37,13 +37,13 @@ async def member_create(file: UploadFile,
     return {"file_size": file.filename}
 
 
-@router.get("/check", response_model = list[member_schema.Member])
+@router.post("/check",  response_model = list[member_schema.Member])
 def member_check(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     member = member_crud.check_member_data(db, user_id = current_user.id)
     return member
 
 
-@router.get("/delete")
+@router.post("/delete", status_code = status.HTTP_204_NO_CONTENT)
 def member_delete(member_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     member = member_crud.delete_member_data(db = db, user_id = current_user.id, member_id = member_id)
     if member:
