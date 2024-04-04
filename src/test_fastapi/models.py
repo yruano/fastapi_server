@@ -3,6 +3,7 @@ from sqlalchemy.dialects.mysql import LONGBLOB
 from sqlalchemy.orm import relationship
 
 
+# 테이블 데이터 좀 더 생각해봐야함
 from database import Base
 
 

@@ -22,3 +22,20 @@ def create_member(db: Session, _image: bytes, user: User):
                            user = user)
     db.add(db_Member)
     db.commit()
+
+
+def check_member_data(db: Session, user_id: int):
+    member = db.query(Member).filter(Member.user_id == user_id)
+    return member
+
+
+def delete_member_data(db: Session, user_id: int, member_id: int):
+    member = db.query(Member).filter(Member.id == member_id, Member.user_id == user_id).first()
+
+    print(member)
+    if member is not None:
+        db.delete(member)
+        db.commit()
+        return True
+    else:
+        return False

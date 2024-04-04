@@ -21,7 +21,7 @@ def member_list(db: Session = Depends(get_db)):
     return _member_list
 
 
-@router.get("/detail/{member_id}", response_model = member_schema.Member)
+@router.get("/detail", response_model = member_schema.Member)
 def member_detail(member_id: int, db: Session = Depends(get_db)):
     member = member_crud.get_member(db, member_id = member_id)
     return member
@@ -35,3 +35,18 @@ async def member_create(file: UploadFile,
     encoded_image = base64.b64encode(contents)
     member_crud.create_member(db = db, _image = encoded_image, user = current_user)
     return {"file_size": file.filename}
+
+
+@router.get("/check", response_model = list[member_schema.Member])
+def member_check(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    member = member_crud.check_member_data(db, user_id = current_user.id)
+    return member
+
+
+@router.get("/delete")
+def member_delete(member_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    member = member_crud.delete_member_data(db = db, user_id = current_user.id, member_id = member_id)
+    if member:
+        return "성공"
+    else:
+        return "실패"
