@@ -42,12 +42,12 @@ def delete_member_data(db: Session, user_id: int, member_id: int):
 
 
 def check_user(db: Session, user: User):
-    return db.query(User).filter(User.username == user.username).first()
+    return db.query(User).filter(User.userid == user.userid).first()
 
 
 def modify_user(db: Session, user_modify: User, current_user: User):
     user = db.query(User).filter(
-        (User.username == user_modify.username) |
+        (User.userid == user_modify.userid) |
         (User.email == user_modify.email)
     ).first()
 

@@ -35,7 +35,6 @@ def user_create(_user_create: user_schema.UserCreate, db: Session = Depends(get_
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
                            db: Session = Depends(get_db)):
 
-
     # check user and password
     user = user_crud.get_user(db, form_data.username)
     if not user or not pwd_context.verify(form_data.password, user.password):
@@ -48,7 +47,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(),
 
     # make access token
     data = {
-        "sub": user.username,
+        "sub": user.userid,
         "exp": datetime.now() + timedelta(minutes = ACCESS_TOKEN_EXPIRE_MINUTES)
     }
     access_token = jwt.encode(data, SECRET_KEY, algorithm = ALGORITHM)
@@ -70,13 +69,13 @@ def get_current_user(token: str = Depends(oauth2_scheme),
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        userid: str = payload.get("sub")
+        if userid is None:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
     else:
-        user = user_crud.get_user(db, username=username)
+        user = user_crud.get_user(db, username=userid)
         if user is None:
             raise credentials_exception
         return user
