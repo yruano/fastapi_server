@@ -37,7 +37,7 @@ async def member_create(file: UploadFile,
     return {"file_size": file.filename}
 
 
-@router.post("/check",  response_model = list[member_schema.Member])
+@router.get("/check",  response_model = list[member_schema.Member])
 def member_check(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     member = member_crud.check_member_data(db, user_id = current_user.id)
     return member
@@ -50,3 +50,15 @@ def member_delete(member_id: int, current_user: User = Depends(get_current_user)
         return "성공"
     else:
         return "실패"
+
+
+@router.get("/user_check", response_model = member_schema.User)
+def check_user(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = member_crud.check_user(db = db, user = current_user)
+    return user
+
+
+@router.post("/user_modify")
+def modify_user(_user_modify: member_schema.User, _current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = member_crud.modify_user(db = db, user_modify = _user_modify, current_user = _current_user)
+    return user

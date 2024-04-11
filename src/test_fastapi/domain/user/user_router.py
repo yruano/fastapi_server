@@ -80,15 +80,3 @@ def get_current_user(token: str = Depends(oauth2_scheme),
         if user is None:
             raise credentials_exception
         return user
-
-
-@router.post("/check", response_model = user_schema.User)
-def check_user(current_user: user_schema.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    user = user_crud.check_user(db = db, user = current_user)
-    return user
-
-
-# @router.post("/modify", response_model = user_schema.User)
-# def modify_user(current_user: user_schema.User = Depends(get_current_user), db: Session = Depends(get_db)):
-#     user 
-#     return user

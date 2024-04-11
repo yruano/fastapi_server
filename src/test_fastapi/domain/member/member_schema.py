@@ -9,3 +9,8 @@ class Member(BaseModel):
     image: bytes
     create_date: datetime.datetime
     user: User | None
+
+
+class User(BaseModel):
+    username: str
+    email: str

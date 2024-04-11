@@ -3,8 +3,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 
-# SQLALCHEMY_DATABASE_URL = "mariadb+mariadbconnector://root:root@127.0.0.1:3306/autolook"
-SQLALCHEMY_DATABASE_URL = "mariadb+mariadbconnector://root:hoseo2019@database-1.c7ksqskkcyxy.ap-northeast-2.rds.amazonaws.com:3306/ALB"
+SQLALCHEMY_DATABASE_URL = "mariadb+mariadbconnector://root:root@127.0.0.1:3306/autolook"
+# SQLALCHEMY_DATABASE_URL = "mariadb+mariadbconnector://root:hoseo2019@database-1.c7ksqskkcyxy.ap-northeast-2.rds.amazonaws.com:3306/ALB"
 
 
 engine = create_engine(
