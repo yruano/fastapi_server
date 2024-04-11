@@ -12,6 +12,7 @@ class Member(Base):
 
     id = Column(Integer, primary_key = True)
     image = Column(LONGBLOB, nullable = False)
+    category = Column(String(50), nullable = True)
     create_date = Column(DateTime, nullable = False)
     user_id = Column(Integer, ForeignKey("user.id"), nullable = True)
     user = relationship("User", backref = "member_users")
