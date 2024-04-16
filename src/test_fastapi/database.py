@@ -1,7 +1,10 @@
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine, MetaData, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
+
+# sqlalchemy.url = mariadb+mariadbconnector://root:hoseo2019@database-1.c7ksqskkcyxy.ap-northeast-2.rds.amazonaws.com:3306/ALB
+# sqlalchemy.url = mariadb+mariadbconnector://root:root@127.0.0.1:3306/autolook
 
 SQLALCHEMY_DATABASE_URL = "mariadb+mariadbconnector://root:root@127.0.0.1:3306/autolook"
 # SQLALCHEMY_DATABASE_URL = "mariadb+mariadbconnector://root:hoseo2019@database-1.c7ksqskkcyxy.ap-northeast-2.rds.amazonaws.com:3306/ALB"

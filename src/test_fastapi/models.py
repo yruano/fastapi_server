@@ -22,8 +22,8 @@ class User(Base):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key = True)
+    nickname = Column(String(50), unique = True, nullable = False)
     username = Column(String(50), unique = True, nullable = False)
-    userid = Column(String(50), unique = True, nullable = False)
     password = Column(String(1000), nullable = False)
     instagram = Column(String(50), unique = True, nullable = True)
     email = Column(String(50), unique = True, nullable = False)

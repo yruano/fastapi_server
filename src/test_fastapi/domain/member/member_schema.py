@@ -12,5 +12,5 @@ class Member(BaseModel):
 
 
 class User(BaseModel):
-    username: str
+    nickname: str
     email: str
