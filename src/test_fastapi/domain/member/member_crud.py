@@ -39,27 +39,3 @@ def delete_member_data(db: Session, user_id: int, member_id: int):
         return True
     else:
         return False
-
-
-def check_user(db: Session, user: User):
-    return db.query(User).filter(User.username == user.username).first()
-
-
-def modify_user(db: Session, user_modify: User, current_user: User):
-    user = db.query(User).filter(
-        (User.username == user_modify.username) |
-        (User.email == user_modify.email)
-    ).first()
-
-    if user:
-        return "다시 입력해주세요"
-    
-    user = db.query(User).filter(User.id == current_user.id).first()
-    if user:
-        user.username = user_modify.username
-        user.email = user.email
-        db.add(user)
-        db.commit()
-        return user_modify
-    else:
-        return "error"
