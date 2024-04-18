@@ -7,8 +7,8 @@ from starlette import status
 from database import get_db
 from domain.member import member_schema, member_crud
 from domain.user.user_router import get_current_user
-from domain.user.user_schema import UserCreate
-from domain.user.user_crud import modify_user, check_user
+from domain.user.user_schema import UserModify
+from domain.user.user_crud import modify_user, get_user
 from models import User
 
 
@@ -54,13 +54,13 @@ def member_delete(member_id: int, current_user: User = Depends(get_current_user)
         return "실패"
 
 
-@router.get("/check_user", response_model = member_schema.User)
-def check_user(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    user = check_user(db = db, user = current_user)
+@router.get("/user_check", response_model = member_schema.User)
+def user_check(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = get_user(db = db, user = current_user)
     return user
 
 
-@router.post("/modify_user")
-def modify_user(_modify_user: UserCreate, _current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+@router.post("/user_modify")
+def user_modify(_modify_user: UserModify, _current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     user = modify_user(db = db, modify_user = _modify_user, current_user = _current_user)
     return user
