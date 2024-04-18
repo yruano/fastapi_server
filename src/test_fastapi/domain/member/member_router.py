@@ -17,6 +17,18 @@ router = APIRouter(
 )
 
 
+@router.get("/user_check", response_model = member_schema.User)
+def user_check(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = get_user(db = db, user = current_user)
+    return user
+
+
+@router.post("/user_modify")
+def user_modify(_modify_user: UserModify, _current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = modify_user(db = db, modify_user = _modify_user, current_user = _current_user)
+    return user
+
+
 @router.get("/list", response_model = list[member_schema.Member])
 def member_list(db: Session = Depends(get_db)):
     _member_list = member_crud.get_member_list(db)
@@ -52,15 +64,3 @@ def member_delete(member_id: int, current_user: User = Depends(get_current_user)
         return "성공"
     else:
         return "실패"
-
-
-@router.get("/user_check", response_model = member_schema.User)
-def user_check(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    user = get_user(db = db, user = current_user)
-    return user
-
-
-@router.post("/user_modify")
-def user_modify(_modify_user: UserModify, _current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    user = modify_user(db = db, modify_user = _modify_user, current_user = _current_user)
-    return user
