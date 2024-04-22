@@ -43,11 +43,12 @@ def member_detail(member_id: int, db: Session = Depends(get_db)):
 
 @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
 async def member_create(file: UploadFile,
+                        category: str,
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user)):
     contents = await file.read()
     encoded_image = base64.b64encode(contents)
-    member_crud.create_member(db = db, _image = encoded_image, user = current_user)
+    member_crud.create_member(db = db, _image = encoded_image, user = current_user, category = category)
     return {"file_size": file.filename}
 
 
@@ -64,3 +65,9 @@ def member_delete(member_id: int, current_user: User = Depends(get_current_user)
         return "성공"
     else:
         return "실패"
+
+
+@router.get("/check_category",  response_model = list[member_schema.Member])
+def check_category(member_category: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    member_list = member_crud.category_check_member(db, user_id = current_user.id, category = member_category)
+    return member_list
