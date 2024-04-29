@@ -53,8 +53,8 @@ async def member_create(file: UploadFile,
 
 
 @router.get("/check",  response_model = list[member_schema.Member])
-def member_check(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    member = member_crud.check_member_data(db, user_id = current_user.id)
+def member_check(member_category: str = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    member = member_crud.check_member_data(category = member_category, db = db, user_id = current_user.id)
     return member
 
 
@@ -65,9 +65,3 @@ def member_delete(member_id: int, current_user: User = Depends(get_current_user)
         return "성공"
     else:
         return "실패"
-
-
-@router.get("/check_category",  response_model = list[member_schema.Member])
-def check_category(member_category: str, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    member_list = member_crud.category_check_member(db, user_id = current_user.id, category = member_category)
-    return member_list

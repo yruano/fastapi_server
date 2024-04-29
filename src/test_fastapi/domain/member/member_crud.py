@@ -25,8 +25,11 @@ def create_member(db: Session, _image: bytes, user: User, category: str):
     db.commit()
 
 
-def check_member_data(db: Session, user_id: int):
-    member = db.query(Member).filter(Member.user_id == user_id)
+def check_member_data(category: str, db: Session, user_id: int):
+    if category is None:
+        member = db.query(Member).filter(Member.user_id == user_id).all()
+    else:
+        member = db.query(Member).filter(Member.category == category, Member.user_id == user_id).all()
     return member
 
 
@@ -39,8 +42,3 @@ def delete_member_data(db: Session, user_id: int, member_id: int):
         return True
     else:
         return False
-
-
-def category_check_member(db: Session, user_id: int, category: str):
-    member_list = db.query(Member).filter(Member.category == category, Member.user_id == user_id).all()
-    return member_list

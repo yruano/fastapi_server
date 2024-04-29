@@ -6,8 +6,8 @@ from sqlalchemy.orm import sessionmaker
 # sqlalchemy.url = mariadb+mariadbconnector://root:hoseo2019@database-1.c7ksqskkcyxy.ap-northeast-2.rds.amazonaws.com:3306/ALB
 # sqlalchemy.url = mariadb+mariadbconnector://root:root@127.0.0.1:3306/autolook
 
-SQLALCHEMY_DATABASE_URL = "mariadb+mariadbconnector://root:root@127.0.0.1:3306/autolook"
-# SQLALCHEMY_DATABASE_URL = "mariadb+mariadbconnector://root:hoseo2019@database-1.c7ksqskkcyxy.ap-northeast-2.rds.amazonaws.com:3306/ALB"
+# SQLALCHEMY_DATABASE_URL = "mariadb+mariadbconnector://root:root@127.0.0.1:3306/autolook"
+SQLALCHEMY_DATABASE_URL = "mariadb+mariadbconnector://root:hoseo2019@database-2.c7ksqskkcyxy.ap-northeast-2.rds.amazonaws.com:3306/ALB"
 
 
 engine = create_engine(
@@ -27,9 +27,9 @@ naming_convention = {
 Base.metadata = MetaData(naming_convention = naming_convention)
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+# def get_db():
+#     db = SessionLocal()
+#     try:
+#         yield db
+#     finally:
+#         db.close()
