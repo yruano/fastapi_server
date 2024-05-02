@@ -2,32 +2,30 @@ from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.dialects.mysql import LONGBLOB
 from sqlalchemy.orm import relationship
 
-
-# 테이블 데이터 좀 더 생각해봐야함
 from database import Base
 
-# last_use = Column(DateTime, nullable = True)
-# use_count = Column(Integer, nullable = True)
-# color = Column(String(50), nullable = True)
 
+class Clothes(Base):
+    __tablename__ = "Clothes"
 
-class Member(Base):
-    __tablename__ = "member"
-
-    id = Column(Integer, primary_key = True)
-    image = Column(LONGBLOB, nullable = False)
-    category = Column(String(50), nullable = True)
-    create_date = Column(DateTime, nullable = False)
-    user_id = Column(Integer, ForeignKey("user.id"), nullable = True)
-    user = relationship("User", backref = "member_users")
+    Clothes_Id = Column(Integer, primary_key = True)
+    Clothes_Create_Date = Column(DateTime, nullable = False)
+    Clothes_LastFit_Date = Column(DateTime, nullable = False)
+    Clothes_Category = Column(String(50), nullable = True)
+    Clothes_Image = Column(LONGBLOB, nullable = False)
+    Clothes_Count = Column(Integer, nullable = True)
+    Clothes_Score = Column(Integer, nullable = True)
+    User_Id = Column(String(20), ForeignKey("User.username"), nullable = True)
+    User = relationship("User", backref = "Clothe_Users")
 
 
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "User"
 
-    id = Column(Integer, primary_key = True)
-    nickname = Column(String(50), unique = True, nullable = False)
-    username = Column(String(50), unique = True, nullable = False)
-    password = Column(String(1000), nullable = False)
-    instagram = Column(String(50), unique = True, nullable = True)
-    email = Column(String(50), unique = True, nullable = False)
+    username = Column(String(20), primary_key = True, unique = True, nullable = False)
+    password = Column(String(20), nullable = False)
+    User_NickName = Column(String(20), unique = True, nullable = False)
+    User_Instagram_ID = Column(String(50), unique = True, nullable = True)
+    User_Age = Column(Integer, unique = True, nullable = True)
+    User_Imail = Column(String(50), unique = True, nullable = True)
+    User_ProfileImage = Column(LONGBLOB, nullable = True)
