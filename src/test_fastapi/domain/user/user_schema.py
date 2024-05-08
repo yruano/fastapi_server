@@ -36,7 +36,7 @@ class UserCreate():
         self.User_Imail = User_Imail
         self.User_ProfileImage = User_ProfileImage
 
-    @field_validator('username', 'password1', 'password2')
+    @field_validator('username', 'password1', 'password2', 'User_NickName')
     def not_empty(cls, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')
