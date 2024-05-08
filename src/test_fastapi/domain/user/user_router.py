@@ -1,5 +1,8 @@
+import base64
+from pydantic import EmailStr
 from datetime import timedelta, datetime
-from fastapi import APIRouter, HTTPException
+from typing import Optional
+from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
@@ -21,9 +24,41 @@ router = APIRouter(
     prefix = "/api/user",
 )
 
+# 문제는 file: Optional[UploadFile] = File(None)이라는 선언이 FastAPI의 요청 본문에 있는 
+# 다른 필드(user_create, db)와 충돌할 수 있다는 것입니다. 
+# FastAPI는 요청 본문의 각 필드를 개별적으로 해석하려고 시도하기 때문에, 
+# UploadFile과 다른 필드가 함께 있으면 FastAPI가 어떤 필드가 파일을 나타내는지 혼동할 수 있습니다.
+# 그래서 이미지 파일을 따로 가지고 와야한다.
 
 @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
-def user_create(_user_create: user_schema.UserCreate, db: Session = Depends(get_db)):
+async def user_create(
+                    username: str,
+                    password1: str,
+                    password2: str,
+                    User_NickName: str,
+                    User_Instagram_ID: str = None,
+                    User_Age: int = None,
+                    User_Imail: EmailStr = None,
+                    file: UploadFile = File(None),
+                    db: Session = Depends(get_db)
+                ):
+    if file:
+        contents = await file.read()
+        User_ProfileImage = base64.b64encode(contents)
+    else:
+        User_ProfileImage = None
+
+    _user_create = user_schema.UserCreate(
+        username = username,
+        password1 = password1,
+        password2 = password2,
+        User_NickName = User_NickName,
+        User_Instagram_ID = User_Instagram_ID,
+        User_Age = User_Age,
+        User_Imail = User_Imail,
+        User_ProfileImage = User_ProfileImage,
+    )
+
     user = user_crud.get_existing_user(db, user_create = _user_create)
     if user:
         raise HTTPException(status_code = status.HTTP_409_CONFLICT,
@@ -68,14 +103,14 @@ def get_current_user(token: str = Depends(oauth2_scheme),
         headers = {"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, SECRET_KEY, algorithms = [ALGORITHM])
         username: str = payload.get("sub")
         if username is None:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
     else:
-        user = user_crud.get_user(db, username=username)
+        user = user_crud.get_user(db, username = username)
         if user is None:
             raise credentials_exception
         return user

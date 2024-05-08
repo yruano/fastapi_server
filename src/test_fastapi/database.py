@@ -27,9 +27,9 @@ naming_convention = {
 Base.metadata = MetaData(naming_convention = naming_convention)
 
 
-# def get_db():
-#     db = SessionLocal()
-#     try:
-#         yield db
-#     finally:
-#         db.close()
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
