@@ -28,7 +28,6 @@ router = APIRouter(
 # 다른 필드(user_create, db)와 충돌할 수 있다는 것입니다. 
 # FastAPI는 요청 본문의 각 필드를 개별적으로 해석하려고 시도하기 때문에, 
 # UploadFile과 다른 필드가 함께 있으면 FastAPI가 어떤 필드가 파일을 나타내는지 혼동할 수 있습니다.
-# 그래서 이미지 파일을 따로 가지고 와야한다.
 
 @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
 async def user_create(
