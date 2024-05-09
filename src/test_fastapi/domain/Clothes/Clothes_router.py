@@ -17,15 +17,18 @@ router = APIRouter(
 )
 
 
+@router.get("/check")
+def Clothes_check(Clothe_category: str = None, Clothe_id: int = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    clothe = Clothes_crud.check_Clothes_data(category = Clothe_category, clothe_id = Clothe_id, db = db, user_id = current_user.username)
+    return clothe
+
+
 @router.get("/user_check")
 def user_check(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     user = get_user(db = db, username = current_user.username)
     return user
 
-# 이거도 바꿔야한다 문제가 있네
-# 회원가입과 비슷한 형식으로 하는게 좋겠군
-# 그리고 클래스 함수를 사요아는 방식으로 하는게 좋을거 같은데 이부분을 더 생각해 봐야겠군
-# 이거 fastapi랑 py클래스 좀 확인해서 처리를 다시 해야 겠다 이거 되면 회원가입도 바꾸고 그러면 좀 더 나은 값들이 나오겠지
+
 @router.post("/user_modify")
 async def user_modify(
                     password1: str = "",
@@ -52,21 +55,9 @@ async def user_modify(
         User_Imail = User_Imail,
         User_ProfileImage = User_ProfileImage,
     )
-    
+
     user = modify_user(db = db, modify_user = _user_modify, current_user = _current_user)
     return user
-
-
-@router.get("/list", response_model = list[Clothes_schema.Clothes])
-def Clothes_list(db: Session = Depends(get_db)):
-    _Clothes_list = Clothes_crud.get_Clothes_list(db)
-    return _Clothes_list
-
-
-@router.get("/detail", response_model = Clothes_schema.Clothes)
-def Clothes_detail(Clothes_id: int, db: Session = Depends(get_db)):
-    clothe = Clothes_crud.get_Clothes(db, Clothes_id = Clothes_id)
-    return clothe
 
 
 @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
@@ -77,23 +68,13 @@ async def Clothes_create(file: UploadFile,
     encoded_image = base64.b64encode(contents)
 
     clothe = Clothes_schema.Clothes
-    clothe.Clothes_Category = None
+    clothe.Clothes_Category = ""
     clothe.Clothes_Image = encoded_image
     clothe.User_Id = current_user.username
     clothe.User = current_user
     Clothes_crud.create_Clothes(db = db, _clothe = clothe)
 
 
-@router.get("/check",  response_model = list[Clothes_schema.Clothes])
-def Clothes_check(Clothes_category: str = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    clothe = Clothes_crud.check_Clothes_data(category = Clothes_category, db = db, user_id = current_user.username)
-    return clothe
-
-
 @router.post("/delete", status_code = status.HTTP_204_NO_CONTENT)
 def Clothes_delete(Clothes_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    clothe = Clothes_crud.delete_Clothes_data(db = db, user_id = current_user.id, Clothes_id = Clothes_id)
-    if clothe:
-        return "성공"
-    else:
-        return "실패"
+    clothe = Clothes_crud.delete_Clothes_data(db = db, user_id = current_user.username, Clothes_id = Clothes_id)

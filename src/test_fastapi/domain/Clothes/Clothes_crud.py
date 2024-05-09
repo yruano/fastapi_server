@@ -4,18 +4,6 @@ from models import Clothes, User
 from sqlalchemy.orm import Session
 
 
-def get_Clothes_list(db: Session):
-    clothe_list = db.query(Clothes)\
-        .order_by(Clothes.Clothes_Create_Date.desc())\
-        .all()
-    return clothe_list
-
-
-def get_Clothes(db: Session, Clothes_id: int):
-    clothe = db.query(Clothes).get(Clothes_id)
-    return clothe
-
-
 def create_Clothes(db: Session, _clothe: Clothes):
     db_Clothe = Clothes(
                     Clothes_Create_Date = datetime.now(),
@@ -31,11 +19,11 @@ def create_Clothes(db: Session, _clothe: Clothes):
     db.commit()
 
 
-def check_Clothes_data(category: str, db: Session, user_id: str):
-    if category is None:
+def check_Clothes_data(category: str, clothe_id: int, db: Session, user_id: str):
+    if category is None and clothe_id is None:
         clothe = db.query(Clothes).filter(Clothes.User_Id == user_id).all()
     else:
-        clothe = db.query(Clothes).filter(Clothes.Clothes_Category == category, Clothes.User_Id == user_id).all()
+        clothe = db.query(Clothes).filter(Clothes.Clothes_Category == category, Clothes.Clothes_Id == clothe_id, Clothes.User_Id == user_id).all()
     return clothe
 
 
