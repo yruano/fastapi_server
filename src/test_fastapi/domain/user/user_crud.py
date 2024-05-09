@@ -30,24 +30,21 @@ def get_user(db: Session, username: str):
     return db.query(User).filter(User.username == username).first()
 
 
-def modify_user(db: Session, modify_user: UserModify, current_user: User, profileImage: bytes):
+def modify_user(db: Session, modify_user: UserModify, current_user: User):
     original_user = db.query(User).filter(User.username == current_user.username).first()
     
-    if modify_user.User_Imail is not None:
+    if modify_user.User_Imail != "" and modify_user.User_Imail is not None:
         user = db.query(User).filter(User.User_Imail == modify_user.User_Imail).first()
         if user:
             return "이미 존재하는 이메일 입니다\n 다시 입력해 주세요!!!!"
         
-    for attr in ['User_Imail', 'User_NickName', 'password1', 'User_Instagram_ID', 'User_Age']:
+    for attr in ['User_Imail', 'User_NickName', 'password1', 'User_Instagram_ID', 'User_Age', 'User_ProfileImage']:
         new_value = getattr(modify_user, attr)
-        if new_value != "":
+        if new_value != "" and new_value is not None:
             if attr == 'password1':
                 new_value = pwd_context.hash(new_value)
             setattr(original_user, attr, new_value)
     
-    if profileImage is not None:
-        setattr(original_user, 'User_ProfileImage', profileImage)
-    
     db.add(original_user)
     db.commit()
-    return get_user(db = db, user = current_user)
+    return get_user(db = db, username = current_user.username)

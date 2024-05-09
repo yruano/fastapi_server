@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 def get_Clothes_list(db: Session):
     clothe_list = db.query(Clothes)\
-        .order_by(Clothes.create_date.desc())\
+        .order_by(Clothes.Clothes_Create_Date.desc())\
         .all()
     return clothe_list
 

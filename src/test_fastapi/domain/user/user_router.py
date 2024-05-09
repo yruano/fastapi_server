@@ -1,7 +1,6 @@
 import base64
 from pydantic import EmailStr
 from datetime import timedelta, datetime
-from typing import Optional
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
@@ -35,9 +34,9 @@ async def user_create(
                     password1: str,
                     password2: str,
                     User_NickName: str,
-                    User_Instagram_ID: str = None,
-                    User_Age: int = None,
-                    User_Imail: EmailStr = None,
+                    User_Instagram_ID: str = "",
+                    User_Age: int = 0,
+                    User_Imail: EmailStr = "",
                     file: UploadFile = File(None),
                     db: Session = Depends(get_db)
                 ):

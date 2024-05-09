@@ -9,9 +9,13 @@ class Token(BaseModel):
 
 
 class User(BaseModel):
-    id: int
     username: str
-    email: str
+    password: str
+    User_NickName: str
+    User_Instagram_ID: str
+    User_Age: int
+    User_Imail: EmailStr
+    User_ProfileImage: bytes
 
 
 class UserCreate():
@@ -27,38 +31,47 @@ class UserCreate():
     def __init__(self, username: str, password1: str, password2: str, 
                 User_NickName: str, User_Instagram_ID: str, User_Age: int, 
                 User_Imail: EmailStr, User_ProfileImage: bytes):
-        self.username = username
-        self.password1 = password1
-        self.password2 = password2
-        self.User_NickName = User_NickName
+        self.username = self.not_empty(username)
+        self.password1 = self.not_empty(password1)
+        self.password2 = self.passwords_match(password2)
+        self.User_NickName = self.not_empty(User_NickName)
         self.User_Instagram_ID = User_Instagram_ID
         self.User_Age = User_Age
         self.User_Imail = User_Imail
         self.User_ProfileImage = User_ProfileImage
 
-    @field_validator('username', 'password1', 'password2', 'User_NickName')
-    def not_empty(cls, v):
+    def not_empty(self, v):
         if not v or not v.strip():
             raise ValueError('빈 값은 허용되지 않습니다.')
         return v
 
-    @field_validator('password2')
-    def passwords_match(cls, v, info: FieldValidationInfo):
-        if 'password1' in info.data and v != info.data['password1']:
+    def passwords_match(self, v):
+        if self.password1 != v:
             raise ValueError('비밀번호가 일치하지 않습니다')
         return v
 
 
-class UserModify(BaseModel):
+class UserModify():
     password1: str
     password2: str
     User_NickName: str
     User_Instagram_ID: str
     User_Age: int
     User_Imail: EmailStr
+    User_ProfileImage: bytes
 
-    @field_validator('password2')
-    def passwords_match(cls, v, info: FieldValidationInfo):
-        if 'password1' in info.data and v != info.data['password1']:
+    def __init__(self, password1: str, password2: str, User_NickName: str, 
+                User_Instagram_ID: str, User_Age: int, 
+                User_Imail: EmailStr, User_ProfileImage: bytes):
+        self.password1 = password1
+        self.password2 = self.passwords_match(password2)
+        self.User_NickName = User_NickName
+        self.User_Instagram_ID = User_Instagram_ID
+        self.User_Age = User_Age
+        self.User_Imail = User_Imail
+        self.User_ProfileImage = User_ProfileImage
+
+    def passwords_match(self, v):
+        if self.password1 != v:
             raise ValueError('비밀번호가 일치하지 않습니다')
         return v

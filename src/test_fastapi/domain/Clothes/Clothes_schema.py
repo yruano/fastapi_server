@@ -13,4 +13,4 @@ class Clothes(BaseModel):
     Clothes_Count: int
     Clothes_Score: int
     User_Id: str
-    User: User | None
+    User: User

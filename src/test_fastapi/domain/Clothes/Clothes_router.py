@@ -1,7 +1,7 @@
 import base64
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.orm import Session
-
+from pydantic import EmailStr
 
 from starlette import status
 from database import get_db
@@ -17,15 +17,43 @@ router = APIRouter(
 )
 
 
-@router.get("/user_check", response_model = Clothes_schema.User)
+@router.get("/user_check")
 def user_check(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    user = get_user(db = db, user = current_user)
+    user = get_user(db = db, username = current_user.username)
     return user
 
-
+# 이거도 바꿔야한다 문제가 있네
+# 회원가입과 비슷한 형식으로 하는게 좋겠군
+# 그리고 클래스 함수를 사요아는 방식으로 하는게 좋을거 같은데 이부분을 더 생각해 봐야겠군
+# 이거 fastapi랑 py클래스 좀 확인해서 처리를 다시 해야 겠다 이거 되면 회원가입도 바꾸고 그러면 좀 더 나은 값들이 나오겠지
 @router.post("/user_modify")
-def user_modify(_modify_user: UserModify, _current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    user = modify_user(db = db, modify_user = _modify_user, current_user = _current_user)
+async def user_modify(
+                    password1: str = "",
+                    password2: str = "",
+                    User_NickName: str = "",
+                    User_Instagram_ID: str = "",
+                    User_Age: int = 0,
+                    User_Imail: EmailStr = "",
+                    file: UploadFile = File(None),
+                    _current_user: User = Depends(get_current_user),
+                    db: Session = Depends(get_db)):
+    if file:
+        contents = await file.read()
+        User_ProfileImage = base64.b64encode(contents)
+    else:
+        User_ProfileImage = None
+
+    _user_modify = UserModify(
+        password1 = password1,
+        password2 = password2,
+        User_NickName = User_NickName,
+        User_Instagram_ID = User_Instagram_ID,
+        User_Age = User_Age,
+        User_Imail = User_Imail,
+        User_ProfileImage = User_ProfileImage,
+    )
+    
+    user = modify_user(db = db, modify_user = _user_modify, current_user = _current_user)
     return user
 
 
@@ -49,6 +77,7 @@ async def Clothes_create(file: UploadFile,
     encoded_image = base64.b64encode(contents)
 
     clothe = Clothes_schema.Clothes
+    clothe.Clothes_Category = None
     clothe.Clothes_Image = encoded_image
     clothe.User_Id = current_user.username
     clothe.User = current_user
