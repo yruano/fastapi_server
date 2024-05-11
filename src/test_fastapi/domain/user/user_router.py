@@ -30,21 +30,14 @@ router = APIRouter(
 
 @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
 async def user_create(
-                    username: str,
+                    username: EmailStr,
                     password1: str,
                     password2: str,
                     User_NickName: str,
                     User_Instagram_ID: str = "",
                     User_Age: int = 0,
-                    User_Imail: EmailStr = "",
-                    file: UploadFile = File(None),
                     db: Session = Depends(get_db)
                 ):
-    if file:
-        contents = await file.read()
-        User_ProfileImage = base64.b64encode(contents)
-    else:
-        User_ProfileImage = None
 
     _user_create = user_schema.UserCreate(
         username = username,
@@ -53,8 +46,6 @@ async def user_create(
         User_NickName = User_NickName,
         User_Instagram_ID = User_Instagram_ID,
         User_Age = User_Age,
-        User_Imail = User_Imail,
-        User_ProfileImage = User_ProfileImage,
     )
 
     user = user_crud.get_existing_user(db, user_create = _user_create)
@@ -62,6 +53,9 @@ async def user_create(
         raise HTTPException(status_code = status.HTTP_409_CONFLICT,
                             detail="이미 존재하는 사용자입니다.")
     user_crud.create_user(db = db, user_create = _user_create)
+
+
+# @router.post("/pro")
 
 
 @router.post("/login", response_model = user_schema.Token)

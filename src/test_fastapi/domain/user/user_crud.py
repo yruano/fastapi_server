@@ -13,8 +13,7 @@ def create_user(db: Session, user_create: UserCreate):
                    User_NickName = user_create.User_NickName,
                    User_Instagram_ID = user_create.User_Instagram_ID,
                    User_Age = user_create.User_Age,
-                   User_Imail = user_create.User_Imail,
-                   User_ProfileImage = user_create.User_ProfileImage)
+                )
     db.add(db_user)
     db.commit()
 

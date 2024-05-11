@@ -19,6 +19,19 @@ def create_Clothes(db: Session, _clothe: Clothes):
     db.commit()
 
 
+def modify_Clothes(clothe_id: int, user_id: str, modify_clothe: Clothes, db: Session):
+    original_user = db.query(Clothes).filter(Clothes.User_Id == user_id, Clothes.Clothes_Id == clothe_id).first()
+    
+    for attr in ['Clothes_Category', 'Clothes_Image']:
+        new_value = getattr(modify_clothe, attr)
+        if new_value != "" and new_value is not None:
+            setattr(original_user, attr, new_value)
+    
+    db.add(original_user)
+    db.commit()
+    return check_Clothes_data(db = db, category = None, clothe_id = clothe_id, user_id = user_id)
+
+
 def check_Clothes_data(category: str, clothe_id: int, db: Session, user_id: str):
     if category is None and clothe_id is None:
         clothe = db.query(Clothes).filter(Clothes.User_Id == user_id).all()

@@ -15,17 +15,16 @@ class Clothes(Base):
     Clothes_Image = Column(LONGBLOB, nullable = False)
     Clothes_Count = Column(Integer, nullable = True)
     Clothes_Score = Column(Integer, nullable = True)
-    User_Id = Column(String(20), ForeignKey("User.username"), nullable = True)
+    User_Id = Column(String(50), ForeignKey("User.username"), nullable = True)
     User = relationship("User", backref = "Clothe_Users")
 
 
 class User(Base):
     __tablename__ = "User"
 
-    username = Column(String(20), primary_key = True, unique = True, nullable = False)
-    password = Column(String(20), nullable = False)
+    username = Column(String(50), primary_key = True, unique = True, nullable = False)
+    password = Column(String(30), nullable = False)
     User_NickName = Column(String(20), unique = True, nullable = False)
     User_Instagram_ID = Column(String(50), unique = True, nullable = True)
-    User_Age = Column(Integer, unique = True, nullable = True)
-    User_Imail = Column(String(50), unique = True, nullable = True)
+    User_Age = Column(Integer, nullable = True)
     User_ProfileImage = Column(LONGBLOB, nullable = True)
