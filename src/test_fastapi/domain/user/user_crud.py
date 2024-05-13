@@ -1,5 +1,6 @@
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from pydantic import EmailStr
 from domain.user.user_schema import UserCreate, UserModify
 from models import User
 
@@ -13,15 +14,15 @@ def create_user(db: Session, user_create: UserCreate):
                    User_NickName = user_create.User_NickName,
                    User_Instagram_ID = user_create.User_Instagram_ID,
                    User_Age = user_create.User_Age,
+                   User_ProfileImage = user_create.User_ProfileImage,
                 )
     db.add(db_user)
     db.commit()
-
+    return user_create.username
 
 def get_existing_user(db: Session, user_create: UserCreate):
     return db.query(User).filter(
-        (User.username == user_create.username) |
-        (User.User_Imail == user_create.User_Imail)
+        (User.username == user_create.username)
     ).first()
 
 

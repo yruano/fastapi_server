@@ -23,8 +23,8 @@ class User(Base):
     __tablename__ = "User"
 
     username = Column(String(50), primary_key = True, unique = True, nullable = False)
-    password = Column(String(30), nullable = False)
+    password = Column(String(1000), nullable = False)
     User_NickName = Column(String(20), unique = True, nullable = False)
-    User_Instagram_ID = Column(String(50), unique = True, nullable = True)
+    User_Instagram_ID = Column(String(50), nullable = True)
     User_Age = Column(Integer, nullable = True)
     User_ProfileImage = Column(LONGBLOB, nullable = True)

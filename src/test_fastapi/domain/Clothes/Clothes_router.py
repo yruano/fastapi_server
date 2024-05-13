@@ -1,7 +1,8 @@
 import base64
-from fastapi import APIRouter, Depends, UploadFile, File
-from sqlalchemy.orm import Session
 from pydantic import EmailStr
+from fastapi import APIRouter, Depends, UploadFile, File, Form
+from sqlalchemy.orm import Session
+from typing import Optional
 
 from starlette import status
 from database import get_db
@@ -43,20 +44,20 @@ def user_check(current_user: User = Depends(get_current_user), db: Session = Dep
 
 @router.post("/user_modify")
 async def user_modify(
-                    password1: str = "",
-                    password2: str = "",
-                    User_NickName: str = "",
-                    User_Instagram_ID: str = "",
-                    User_Age: int = 0,
-                    User_Imail: EmailStr = "",
-                    file: bytes = File(None),
-                    _current_user: User = Depends(get_current_user),
-                    db: Session = Depends(get_db)):
+                    password1: str = Form(""),
+                    password2: str = Form(""),
+                    User_NickName: str = Form(""),
+                    User_Instagram_ID: Optional[str] = Form(""),
+                    User_Age: Optional[int] = Form(0),
+                    file: Optional[UploadFile] = File(None),
+                    db: Session = Depends(get_db),
+                    _current_user: User = Depends(get_current_user)
+                    ):
     if file:
         contents = await file.read()
-        User_ProfileImage = base64.b64encode(contents)
+        encoded_image = base64.b64encode(contents)
     else:
-        User_ProfileImage = None
+        encoded_image = None
 
     _user_modify = UserModify(
         password1 = password1,
@@ -64,8 +65,7 @@ async def user_modify(
         User_NickName = User_NickName,
         User_Instagram_ID = User_Instagram_ID,
         User_Age = User_Age,
-        User_Imail = User_Imail,
-        User_ProfileImage = User_ProfileImage,
+        User_ProfileImage = encoded_image,
     )
 
     user = modify_user(db = db, modify_user = _user_modify, current_user = _current_user)
@@ -73,10 +73,11 @@ async def user_modify(
 
 
 @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
-async def Clothes_create(file: bytes,
+async def Clothes_create(file: UploadFile,
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user)):
-    encoded_image = base64.b64encode(file)
+    contents = await file.read()
+    encoded_image = base64.b64encode(contents)
 
     clothe = Clothes_schema.Clothes
     clothe.Clothes_Category = ""
