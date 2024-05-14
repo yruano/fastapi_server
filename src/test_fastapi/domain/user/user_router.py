@@ -21,11 +21,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "/api/user/login")
 router = APIRouter(
     prefix = "/api/user",
 )
-
-# 문제는 file: Optional[UploadFile] = File(None)이라는 선언이 FastAPI의 요청 본문에 있는 
-# 다른 필드(user_create, db)와 충돌할 수 있다는 것입니다. 
-# FastAPI는 요청 본문의 각 필드를 개별적으로 해석하려고 시도하기 때문에, 
-# UploadFile과 다른 필드가 함께 있으면 FastAPI가 어떤 필드가 파일을 나타내는지 혼동할 수 있습니다.
+ㅊㅊ
+# 그냥 UploadFile을 사용하여 멀티폼과 그냥 톰을 동시에 사용하면
+# 멀치 폼에서는 file의 크기가 크다 보니 여러번에 걸쳐 값을 받아온다
+# 하지만 그냥 폼은 그렇지 않다보니 422가 발생한다
 
 @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
 async def user_create(

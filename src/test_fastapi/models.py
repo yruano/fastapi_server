@@ -15,6 +15,8 @@ class Clothes(Base):
     Clothes_Image = Column(LONGBLOB, nullable = False)
     Clothes_Count = Column(Integer, nullable = True)
     Clothes_Score = Column(Integer, nullable = True)
+    # Clothes_Color = Column(String(7), nullable = True)
+    # Clothes_Tone = Column(String(20), nullable = True)
     User_Id = Column(String(50), ForeignKey("User.username"), nullable = True)
     User = relationship("User", backref = "Clothe_Users")
 
