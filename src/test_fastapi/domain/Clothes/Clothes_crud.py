@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+import colorsys
 from datetime import datetime
 
 from models import Clothes, User
@@ -12,6 +14,8 @@ def create_Clothes(db: Session, _clothe: Clothes):
                     Clothes_Image = _clothe.Clothes_Image,
                     Clothes_Count = 0,
                     Clothes_Score = 0,
+                    Clothes_Color = _clothe.Clothes_Color,
+                    Clothes_Tone = _clothe.Clothes_Tone,
                     User_Id = _clothe.User_Id,
                     User = _clothe.User,
                 )
@@ -49,3 +53,29 @@ def delete_Clothes_data(db: Session, user_id: str, Clothes_id: int):
         return True
     else:
         return False
+
+
+def hex_to_rgb(hex_color):
+    return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+
+def rgb_to_hsl(rgb_color):
+    return colorsys.rgb_to_hls(rgb_color[0] / 255, rgb_color[1] / 255, rgb_color[2] / 255)
+
+def determine_tone(hsl_color):
+    h, l, s = hsl_color
+
+    if l > 0.8:
+        return 'pastel tone'
+    elif l < 0.2 and s > 0.2:
+        return 'deep tone'
+    elif s < 0.2:
+        return 'mono tone'
+    else:
+        return 'vivid tone'
+
+def show_color_and_tone(hex_color):
+    rgb_color = hex_to_rgb(hex_color)
+    hsl_color = rgb_to_hsl(rgb_color)
+    tone = determine_tone(hsl_color)
+
+    return tone

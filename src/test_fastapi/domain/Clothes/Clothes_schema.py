@@ -12,5 +12,7 @@ class Clothes(BaseModel):
     Clothes_Image: bytes
     Clothes_Count: int
     Clothes_Score: int
+    Clothes_Color: str
+    Clothes_Tone: str
     User_Id: str
     User: User

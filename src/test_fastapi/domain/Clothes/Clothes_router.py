@@ -78,12 +78,15 @@ async def Clothes_create(file: UploadFile,
                         current_user: User = Depends(get_current_user)):
     contents = await file.read()
     encoded_image = base64.b64encode(contents)
+    color = '#289045'
 
     clothe = Clothes_schema.Clothes
     clothe.Clothes_Category = ""
     clothe.Clothes_Image = encoded_image
     clothe.User_Id = current_user.username
     clothe.User = current_user
+    clothe.Clothes_Color = color
+    clothe.Clothes_Tone = Clothes_crud.show_color_and_tone(color[1:])
     Clothes_crud.create_Clothes(db = db, _clothe = clothe)
 
 
