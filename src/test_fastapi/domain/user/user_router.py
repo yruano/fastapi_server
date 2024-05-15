@@ -21,7 +21,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "/api/user/login")
 router = APIRouter(
     prefix = "/api/user",
 )
-ㅊㅊ
+
 # 그냥 UploadFile을 사용하여 멀티폼과 그냥 톰을 동시에 사용하면
 # 멀치 폼에서는 file의 크기가 크다 보니 여러번에 걸쳐 값을 받아온다
 # 하지만 그냥 폼은 그렇지 않다보니 422가 발생한다
