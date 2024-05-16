@@ -56,26 +56,24 @@ def delete_Clothes_data(db: Session, user_id: str, Clothes_id: int):
 
 
 def hex_to_rgb(hex_color):
-    return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+    r, g, b = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
+    max_value = max(r, g, b)
+    min_value = min(r, g, b)
+    mid_value = r + g + b - max_value - min_value
 
-def rgb_to_hsl(rgb_color):
-    return colorsys.rgb_to_hls(rgb_color[0] / 255, rgb_color[1] / 255, rgb_color[2] / 255)
-
-def determine_tone(hsl_color):
-    h, l, s = hsl_color
-
-    if l > 0.8:
-        return 'pastel tone'
-    elif l < 0.2 and s > 0.2:
-        return 'deep tone'
-    elif s < 0.2:
-        return 'mono tone'
+    # #7ebc8f이런 느낌의 계열의 색은 어떻게 처리 해야하는거지 톤을 하나 더 찾아야하나
+    if abs(r - g) < 30 and abs(g - b) < 30 and abs(b - r) < 30:
+        return "pastel tone"
+    elif min_value <= 40 and min_value < max_value and min_value <= mid_value:
+        return "deep tone"
+    elif r == g == b:
+        return "mono tone"
+    # elif max_value == 255 and min_value < 255:
+    #     return "vivid tone"
     else:
-        return 'vivid tone'
+        # 여기에 들어오면 그 값을 근사 톤을 찾아서 넣어주는 형식으로 하는게 제일 좋은데
+        # 그러면 그 근사톤을 구하는 알고리즘을 만들어야함
+        return "vivid tone"
 
 def show_color_and_tone(hex_color):
-    rgb_color = hex_to_rgb(hex_color)
-    hsl_color = rgb_to_hsl(rgb_color)
-    tone = determine_tone(hsl_color)
-
-    return tone
+    return hex_to_rgb(hex_color)
