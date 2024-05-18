@@ -55,25 +55,44 @@ def delete_Clothes_data(db: Session, user_id: str, Clothes_id: int):
         return False
 
 
+def pastal(r: int, g: int, b: int):
+    return abs((abs(r - g) + abs(g - b) + abs(b - r)) - 90)
+
+
+def mono(r: int, g: int, b: int):
+    m = (r + g + b) / 3
+    return abs(r - m) + abs(g - m) + abs(b - m)
+
+
 def hex_to_rgb(hex_color):
     r, g, b = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
     max_value = max(r, g, b)
     min_value = min(r, g, b)
     mid_value = r + g + b - max_value - min_value
 
-    # #7ebc8f이런 느낌의 계열의 색은 어떻게 처리 해야하는거지 톤을 하나 더 찾아야하나
     if abs(r - g) < 30 and abs(g - b) < 30 and abs(b - r) < 30:
         return "pastel tone"
-    elif min_value <= 40 and min_value < max_value and min_value <= mid_value:
+    elif min_value < 0 and min_value < max_value and min_value < mid_value:
         return "deep tone"
     elif r == g == b:
         return "mono tone"
-    # elif max_value == 255 and min_value < 255:
-    #     return "vivid tone"
-    else:
-        # 여기에 들어오면 그 값을 근사 톤을 찾아서 넣어주는 형식으로 하는게 제일 좋은데
-        # 그러면 그 근사톤을 구하는 알고리즘을 만들어야함
+    elif max_value == 255 and min_value < 255:
         return "vivid tone"
+    else:
+        m = mono(r = r, g = g, b = b)
+        p = pastal(r = r, g = g, b = b)
+        v = 255 - max_value
+        d = min_value
+
+        c = min(m, p, v, d)
+        if (c == m):
+            return "mono tone"
+        elif (c == p):
+            return "pastel tone"
+        elif (c == v):
+            return "vivid tone"
+        elif (c == d):
+            return "deep tone"
 
 def show_color_and_tone(hex_color):
     return hex_to_rgb(hex_color)
