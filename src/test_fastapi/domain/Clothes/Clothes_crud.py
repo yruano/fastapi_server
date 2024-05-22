@@ -55,44 +55,25 @@ def delete_Clothes_data(db: Session, user_id: str, Clothes_id: int):
         return False
 
 
-def pastal(r: int, g: int, b: int):
-    return abs((abs(r - g) + abs(g - b) + abs(b - r)) - 90)
-
-
-def mono(r: int, g: int, b: int):
-    m = (r + g + b) / 3
-    return abs(r - m) + abs(g - m) + abs(b - m)
-
-
 def hex_to_rgb(hex_color):
-    r, g, b = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
-    max_value = max(r, g, b)
-    min_value = min(r, g, b)
-    mid_value = r + g + b - max_value - min_value
+    hex_color = hex_color.lstrip('#')
+    return tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
 
-    if abs(r - g) < 30 and abs(g - b) < 30 and abs(b - r) < 30:
-        return "pastel tone"
-    elif min_value < 0 and min_value < max_value and min_value < mid_value:
-        return "deep tone"
-    elif r == g == b:
-        return "mono tone"
-    elif max_value == 255 and min_value < 255:
-        return "vivid tone"
+def rgb_to_hsl(rgb_color):
+    return colorsys.rgb_to_hls(rgb_color[0]/255, rgb_color[1]/255, rgb_color[2]/255)
+
+def determine_tone(hsl_color):
+    h, s, l = hsl_color
+    if l > 0.8:
+        return 'pastel tone'
+    elif l < 0.2:
+        return 'deep tone'
+    elif s < 0.2:
+        return 'mono tone'
     else:
-        m = mono(r = r, g = g, b = b)
-        p = pastal(r = r, g = g, b = b)
-        v = 255 - max_value
-        d = min_value
-
-        c = min(m, p, v, d)
-        if (c == m):
-            return "mono tone"
-        elif (c == p):
-            return "pastel tone"
-        elif (c == v):
-            return "vivid tone"
-        elif (c == d):
-            return "deep tone"
+        return 'vivid tone'
 
 def show_color_and_tone(hex_color):
-    return hex_to_rgb(hex_color)
+    rgb_color = hex_to_rgb(hex_color)
+    hsl_color = rgb_to_hsl(rgb_color)
+    return determine_tone(hsl_color)
