@@ -62,25 +62,25 @@ def delete_Clothes_data(db: Session, user_id: str, Clothes_id: int):
         return False
 
 
-async def predict_color(color: str):
-    # 색상을 숫자로 변환
-    le = LabelEncoder()
-    colors_encoded = le.fit_transform(combined_colors)
+# async def predict_color(color: str):
+#     # 색상을 숫자로 변환
+#     le = LabelEncoder()
+#     colors_encoded = le.fit_transform(combined_colors)
     
-    # 학습 데이터에 없는 색상이 입력되면 오류를 방지
-    if color not in le.classes_:
-        return {"error": "Color not in training data"}
+#     # 학습 데이터에 없는 색상이 입력되면 오류를 방지
+#     if color not in le.classes_:
+#         return {"error": "Color not in training data"}
 
-    # 색상을 숫자로 변환
-    test_top_encoded = le.transform([color])
+#     # 색상을 숫자로 변환
+#     test_top_encoded = le.transform([color])
 
-    # 예측
-    predicted_bottom_probabilities = ColorCombination_model.predict(test_top_encoded.reshape(-1, 1))
+#     # 예측
+#     predicted_bottom_probabilities = ColorCombination_model.predict(test_top_encoded.reshape(-1, 1))
 
-    # 가장 높은 확률의 클래스로 변환
-    top_n_predictions = tf.math.top_k(predicted_bottom_probabilities, k=3).indices.numpy()
+#     # 가장 높은 확률의 클래스로 변환
+#     top_n_predictions = tf.math.top_k(predicted_bottom_probabilities, k=3).indices.numpy()
 
-    # 숫자를 다시 색상으로 변환
-    predicted_bottoms = le.inverse_transform(top_n_predictions[0])
+#     # 숫자를 다시 색상으로 변환
+#     predicted_bottoms = le.inverse_transform(top_n_predictions[0])
 
-    return predicted_bottoms.tolist()
+#     return predicted_bottoms.tolist()
