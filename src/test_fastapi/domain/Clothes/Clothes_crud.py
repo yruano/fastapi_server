@@ -5,6 +5,13 @@ from models import Clothes, User
 from sqlalchemy.orm import Session
 from sklearn.preprocessing import LabelEncoder
 
+# 모델 로드
+ColorCombination_model = tf.keras.models.load_model('color_model.h5')
+# CSV 파일에서 데이터 읽기
+data = pd.read_csv('colorsDataset.csv')
+# LabelEncoder를 만들기 위해 상의와 바지 색상을 합침
+combined_colors = pd.concat([data['tops'], data['bottoms']])
+
 
 def create_Clothes(db: Session, _clothe: Clothes):
     db_Clothe = Clothes(
@@ -56,15 +63,6 @@ def delete_Clothes_data(db: Session, user_id: str, Clothes_id: int):
 
 
 async def predict_color(color: str):
-    # 모델 로드
-    model = tf.keras.models.load_model('color_model.h5')
-
-    # CSV 파일에서 데이터 읽기
-    data = pd.read_csv('colorsDataset.csv')
-
-    # LabelEncoder를 만들기 위해 상의와 바지 색상을 합침
-    combined_colors = pd.concat([data['tops'], data['bottoms']])
-
     # 색상을 숫자로 변환
     le = LabelEncoder()
     colors_encoded = le.fit_transform(combined_colors)
@@ -77,7 +75,7 @@ async def predict_color(color: str):
     test_top_encoded = le.transform([color])
 
     # 예측
-    predicted_bottom_probabilities = model.predict(test_top_encoded.reshape(-1, 1))
+    predicted_bottom_probabilities = ColorCombination_model.predict(test_top_encoded.reshape(-1, 1))
 
     # 가장 높은 확률의 클래스로 변환
     top_n_predictions = tf.math.top_k(predicted_bottom_probabilities, k=3).indices.numpy()
