@@ -19,25 +19,43 @@ router = APIRouter(
 
 
 @router.get("/clothes_check")
-def Clothes_check(Clothe_category: str = None, Clothe_id: int = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def Clothes_check(Clothe_category: str = None, 
+                Clothe_id: int = None, 
+                current_user: User = Depends(get_current_user), 
+                db: Session = Depends(get_db)):
     clothe = Clothes_crud.check_Clothes_data(category = Clothe_category, clothe_id = Clothe_id, db = db, user_id = current_user.username)
     return clothe
 
 
 @router.post("/clothes_modify")
-async def Clothe_modify(file: bytes, Clothe_id: int = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    encoded_image = base64.b64encode(file)
+async def Clothe_modify(clothe_id: int,
+                        file: Optional[UploadFile] = Form(""), 
+                        Thickness: str = Form(""),
+                        color: str = Form(""),
+                        count:int = Form(""),
+                        current_user: User = Depends(get_current_user), 
+                        db: Session = Depends(get_db)):
+    
+    if file:
+        contents = await file.read()
+        encoded_image = base64.b64encode(contents)
+    else:
+        encoded_image = ""
 
     clothe = Clothes_schema.Clothes
     clothe.Clothes_Category = "윗옷"
+    clothe.Clothes_Id = clothe_id
     clothe.Clothes_Image = encoded_image
-    
-    clothe = Clothes_crud.modify_Clothes(clothe_id = Clothe_id, user_id = User.username, modify_clothe = clothe, db = db)
+    clothe.Clothes_Color = color
+    clothe.Clothes_Count = count
+
+    clothe = Clothes_crud.modify_Clothes(user_id = User.username, modify_clothe = clothe, db = db)
     return clothe
 
 
 @router.get("/user_check")
-def user_check(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def user_check(current_user: User = Depends(get_current_user), 
+            db: Session = Depends(get_db)):
     user = get_user(db = db, username = current_user.username)
     return user
 
@@ -57,7 +75,7 @@ async def user_modify(
         contents = await file.read()
         encoded_image = base64.b64encode(contents)
     else:
-        encoded_image = None
+        encoded_image = ""
 
     _user_modify = UserModify(
         password1 = password1,
@@ -76,9 +94,10 @@ async def user_modify(
 async def Clothes_create(file: UploadFile,
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user)):
+    # Thickness: str = Form(""),
     contents = await file.read()
     encoded_image = base64.b64encode(contents)
-    color = '#735cb0'
+    color = '#ffb3ba'
 
     clothe = Clothes_schema.Clothes
     clothe.Clothes_Category = ""
@@ -91,5 +110,7 @@ async def Clothes_create(file: UploadFile,
 
 
 @router.post("/delete", status_code = status.HTTP_204_NO_CONTENT)
-def Clothes_delete(Clothes_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+def Clothes_delete(Clothes_id: int, 
+                current_user: User = Depends(get_current_user), 
+                db: Session = Depends(get_db)):
     clothe = Clothes_crud.delete_Clothes_data(db = db, user_id = current_user.username, Clothes_id = Clothes_id)

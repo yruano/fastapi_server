@@ -17,6 +17,8 @@ class Clothes(Base):
     Clothes_Score = Column(Integer, nullable = True)
     Clothes_Color = Column(String(7), nullable = True)
     Clothes_Tone = Column(String(20), nullable = True)
+    # Clothes_ThermalInsulation = Column(Integer, nullable = True)
+    # Clothes_Thickness = Column(String(20), nullable = True)
     User_Id = Column(String(50), ForeignKey("User.username"), nullable = True)
     User = relationship("User", backref = "Clothe_Users")
 
