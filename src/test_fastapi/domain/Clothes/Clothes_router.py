@@ -105,12 +105,18 @@ async def Clothes_create(file: UploadFile,
     clothe.User_Id = current_user.username
     clothe.User = current_user
     clothe.Clothes_Color = color
-    clothe.Clothes_Tone = Clothes_crud.predict_color(color = "red")
     Clothes_crud.create_Clothes(db = db, _clothe = clothe)
 
 
-@router.post("/delete", status_code = status.HTTP_204_NO_CONTENT)
+@router.post("/delete")
 def Clothes_delete(Clothes_id: int, 
                 current_user: User = Depends(get_current_user), 
                 db: Session = Depends(get_db)):
     clothe = Clothes_crud.delete_Clothes_data(db = db, user_id = current_user.username, Clothes_id = Clothes_id)
+
+
+@router.post("/matching", status_code = status.HTTP_204_NO_CONTENT)
+async def Clothes_delete(color: str, 
+                db: Session = Depends(get_db)):
+    result = await Clothes_crud.predict_color(color = color)
+    return result

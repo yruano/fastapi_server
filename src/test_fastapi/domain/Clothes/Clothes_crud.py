@@ -1,16 +1,9 @@
 import tensorflow as tf
 import pandas as pd
 from datetime import datetime
-from models import Clothes, User
+from models import Clothes
 from sqlalchemy.orm import Session
 from sklearn.preprocessing import LabelEncoder
-
-# 모델 로드
-ColorCombination_model = tf.keras.models.load_model('color_model.h5')
-# CSV 파일에서 데이터 읽기
-data = pd.read_csv('colorsDataset.csv')
-# LabelEncoder를 만들기 위해 상의와 바지 색상을 합침
-combined_colors = pd.concat([data['tops'], data['bottoms']])
 
 
 def create_Clothes(db: Session, _clothe: Clothes):
@@ -22,7 +15,6 @@ def create_Clothes(db: Session, _clothe: Clothes):
                     Clothes_Count = 0,
                     Clothes_Score = 0,
                     Clothes_Color = _clothe.Clothes_Color,
-                    Clothes_Tone = _clothe.Clothes_Tone,
                     User_Id = _clothe.User_Id,
                     User = _clothe.User,
                 )
@@ -63,6 +55,15 @@ def delete_Clothes_data(db: Session, user_id: str, Clothes_id: int):
 
 
 async def predict_color(color: str):
+    # 모델 로드
+    ColorCombination_model = tf.keras.models.load_model('color_model240603.h5')
+
+    # CSV 파일에서 데이터 읽기
+    data = pd.read_csv('colorsDataSet240602.csv')
+    
+    # LabelEncoder를 만들기 위해 상의와 바지 색상을 합침
+    combined_colors = pd.concat([data['tops'], data['bottoms']])
+
     # 색상을 숫자로 변환
     le = LabelEncoder()
     colors_encoded = le.fit_transform(combined_colors)
@@ -83,4 +84,5 @@ async def predict_color(color: str):
     # 숫자를 다시 색상으로 변환
     predicted_bottoms = le.inverse_transform(top_n_predictions[0])
 
+    print(predicted_bottoms.tolist())
     return predicted_bottoms.tolist()
