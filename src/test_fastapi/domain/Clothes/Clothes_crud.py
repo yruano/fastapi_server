@@ -20,13 +20,13 @@ def create_temperature(category: str):
     pass
 
 def create_Clothes(db: Session, _clothe: Clothes):
-    # 여기서 온도를 확인하는 코드던 모델을 쓰던해서 값을 넣어두자
     db_Clothe = Clothes(
                     Clothes_Create_Date = datetime.now(),
                     Clothes_LastFit_Date = datetime.now(),
                     Clothes_Category = _clothe.Clothes_Category,
                     Clothes_Image = _clothe.Clothes_Image,
                     Clothes_Count = 0,
+                    # 온도를 점수화
                     Clothes_Score = 0,
                     Clothes_Color = _clothe.Clothes_Color,
                     User_Id = _clothe.User_Id,
