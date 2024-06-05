@@ -116,7 +116,7 @@ def Clothes_delete(Clothes_id: int,
 
 
 @router.post("/matching", status_code = status.HTTP_204_NO_CONTENT)
-async def Clothes_delete(color: str, 
+async def Clothes_delete(color: str = Form(""), 
                 db: Session = Depends(get_db)):
     result = await Clothes_crud.predict_color(color = color)
     return result

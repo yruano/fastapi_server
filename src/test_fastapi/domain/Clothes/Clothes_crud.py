@@ -6,7 +6,21 @@ from sqlalchemy.orm import Session
 from sklearn.preprocessing import LabelEncoder
 
 
+tops = [""]
+bottoms = [""]
+
+
+# 카테고리 영어로 된 데이터 셋을 받아야 하는군
+# 그러고 https://namu.wiki/w/%EA%B8%B0%EC%98%A8%EB%B3%84%20%EC%98%B7%EC%B0%A8%EB%A6%BC이걸 기준
+# 값을 지정하는 코드를 작성해야함
+def create_temperature(category: str):
+    # 파이썬에서 맵의 값을 이용해서 키를 구하는 방법이 있는지 확인 해야함
+    # 존재하지 않은 값들도 추가적으로 넣어줘야함
+    # 값의 변화를 주거나 다른 값들이 들어가는 상황이 나오려나?
+    pass
+
 def create_Clothes(db: Session, _clothe: Clothes):
+    # 여기서 온도를 확인하는 코드던 모델을 쓰던해서 값을 넣어두자
     db_Clothe = Clothes(
                     Clothes_Create_Date = datetime.now(),
                     Clothes_LastFit_Date = datetime.now(),
@@ -86,3 +100,29 @@ async def predict_color(color: str):
 
     print(predicted_bottoms.tolist())
     return predicted_bottoms.tolist()
+
+# 옷을 선택하고 그 옷에 맞는 추천이면
+# 색 조합을 찾는다
+# 색에 맞는 옷들 중 온도에 맞는 옷을들 선별해서 출력
+
+# 온도에 맞는 옷을 추천
+# 가능한 조합들을 저장
+# 조합들 중 온도에 맞는 조합만 출력
+
+# 너무 추운 겨울에는 외투를 필수로 넣고 거기에 후두티 맨투맨 등으로 조합해서 추가적으로 넣는 방식을 쓰던
+# 12~16에 맞추어 선별을 하고 그다음 외투를 추가적을 선정하던 이런 방식
+async def Clothes_push(clothe_id: int, user_id: str, db: Session):
+    # clothe_push = list(map(Clothes, Clothes))
+
+    # clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothe_id, Clothes.User_Id == user_id).first()
+    # # 색 추천
+    # clothe_color = await predict_color(color = clothe.Clothes_Color)
+    
+    # 여기서 현재 확인하고 있는 옷이 위인지 아래인 확인할 필요가 있음
+
+    # for ca in tops:
+    #     clo = db.query(Clothes).filter(Clothes.Clothes_Category == ca, Clothes.Clothes_Color == clothe_color, Clothes.User_Id == user_id).first()
+    # sss는 현재의 온도를 의미
+    #     if abs(clothe + clo - sss) < 10:
+    #         clothe_push[clothe] = clo
+    pass
