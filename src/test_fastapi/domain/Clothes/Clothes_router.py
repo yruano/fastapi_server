@@ -94,7 +94,6 @@ async def user_modify(
 async def Clothes_create(file: UploadFile,
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user)):
-    # Thickness: str = Form(""),
     contents = await file.read()
     encoded_image = base64.b64encode(contents)
     color = '#ffb3ba'
