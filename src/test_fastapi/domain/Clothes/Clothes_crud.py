@@ -1,9 +1,7 @@
-import tensorflow as tf
-import pandas as pd
 from datetime import datetime
 from models import Clothes
 from sqlalchemy.orm import Session
-from sklearn.preprocessing import LabelEncoder
+from learning_model import predictcolor
 
 
 clothing_recommendations = {
@@ -57,11 +55,7 @@ clothing_recommendations = {
     }
 }
 
-tops = [""]
-bottoms = [""]
 
-
-# 카테고리 영어로 된 데이터 셋을 받아야 하는군
 # 그러고 https://namu.wiki/w/%EA%B8%B0%EC%98%A8%EB%B3%84%20%EC%98%B7%EC%B0%A8%EB%A6%BC 이걸 기준
 def find_temperature_for_clothing(clothing_item):
     results = []
@@ -119,38 +113,24 @@ def delete_Clothes_data(db: Session, user_id: str, Clothes_id: int):
         return False
 
 
-async def predict_color(color: str):
-    # 모델 로드
-    ColorCombination_model = tf.keras.models.load_model('color_model240603.h5')
-
-    # CSV 파일에서 데이터 읽기
-    data = pd.read_csv('colorsDataSet240602.csv')
-    
-    # LabelEncoder를 만들기 위해 상의와 바지 색상을 합침
-    combined_colors = pd.concat([data['tops'], data['bottoms']])
-
-    # 색상을 숫자로 변환
-    le = LabelEncoder()
-    colors_encoded = le.fit_transform(combined_colors)
-    
-    # 학습 데이터에 없는 색상이 입력되면 오류를 방지
-    if color not in le.classes_:
-        return {"error": "Color not in training data"}
-
-    # 색상을 숫자로 변환
-    test_top_encoded = le.transform([color])
-
-    # 예측
-    predicted_bottom_probabilities = ColorCombination_model.predict(test_top_encoded.reshape(-1, 1))
-
-    # 가장 높은 확률의 클래스로 변환
-    top_n_predictions = tf.math.top_k(predicted_bottom_probabilities, k=3).indices.numpy()
-
-    # 숫자를 다시 색상으로 변환
-    predicted_bottoms = le.inverse_transform(top_n_predictions[0])
-
-    print(predicted_bottoms.tolist())
-    return predicted_bottoms.tolist()
+def get_temperature_range(current_temperature):
+    if current_temperature >= 28:
+        return "28~"
+    elif 23 <= current_temperature <= 27:
+        return "23~27"
+    elif 20 <= current_temperature <= 22:
+        return "20~22"
+    elif 17 <= current_temperature <= 19:
+        return "17~19"
+    elif 12 <= current_temperature <= 16:
+        return "12~16"
+    elif 9 <= current_temperature <= 11:
+        return "9~11"
+    elif 5 <= current_temperature <= 8:
+        return "5~8"
+    elif current_temperature <= 4:
+        return "~4"
+    return None
 
 # 옷을 선택하고 그 옷에 맞는 추천이면
 # 색 조합을 찾는다
@@ -162,18 +142,31 @@ async def predict_color(color: str):
 
 # 너무 추운 겨울에는 외투를 필수로 넣고 거기에 후두티 맨투맨 등으로 조합해서 추가적으로 넣는 방식을 쓰던
 # 12~16에 맞추어 선별을 하고 그다음 외투를 추가적을 선정하던 이런 방식
-async def Clothes_push(clothe_id: int, user_id: str, db: Session):
-    # clothe_push = list(map(Clothes, Clothes))
-
-    # clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothe_id, Clothes.User_Id == user_id).first()
-    # # 색 추천
-    # clothe_color = await predict_color(color = clothe.Clothes_Color)
+async def Clothes_push(clothe_id: int, user_id: str, current_temperature: int, db: Session):
+    clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothe_id, Clothes.User_Id == user_id).first()
+    # 색 추천
+    clothe_color = await predictcolor.predict_color(color=clothe.Clothes_Color)
     
-    # 여기서 현재 확인하고 있는 옷이 위인지 아래인 확인할 필요가 있음
-
-    # for ca in tops:
-    #     clo = db.query(Clothes).filter(Clothes.Clothes_Category == ca, Clothes.Clothes_Color == clothe_color, Clothes.User_Id == user_id).first()
-    # sss는 현재의 온도를 의미
-    #     if abs(clothe + clo - sss) < 10:
-    #         clothe_push[clothe] = clo
-    pass
+    if "error" in clothe_color:
+        return clothe_color
+    
+    # 현재 온도에 맞는 옷 추천
+    temperature_range = get_temperature_range(current_temperature)
+    recommendations = clothing_recommendations.get(temperature_range, {})
+    filtered_recommendations = {"tops": [], "bottoms": [], "outerwear": []}
+    
+    for category, items in recommendations.items():
+        filtered_items = []
+        for item in items:
+            for predicted_color in clothe_color:
+                if predicted_color in item:
+                    filtered_items.append(item)
+        if filtered_items:
+            if category in ["tops"]:
+                filtered_recommendations["tops"].extend(filtered_items)
+            elif category in ["bottoms"]:
+                filtered_recommendations["bottoms"].extend(filtered_items)
+            elif category in ["outerwear"]:
+                filtered_recommendations["outerwear"].extend(filtered_items)
+    
+    return filtered_recommendations

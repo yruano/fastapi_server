@@ -20,6 +20,9 @@ dependencies = [
     "pandas>=2.2.2",
     "sklearn>=0.0.post12",
     "scikit-learn>=1.5.0",
+    "torch>=2.3.1",
+    "opencv-python>=4.10.0.82",
+    "models>=0.9.3",
 ]
 requires-python = "==3.11.*"
 readme = "README.md"

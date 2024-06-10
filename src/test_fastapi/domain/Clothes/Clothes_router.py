@@ -12,6 +12,10 @@ from domain.user.user_schema import UserModify
 from domain.user.user_crud import modify_user, get_user
 from models import User
 
+import torch
+from io import BytesIO
+from PIL import Image
+from datetime import datetime
 
 router = APIRouter(
     prefix="/api/Clothes",
@@ -90,21 +94,64 @@ async def user_modify(
     return user
 
 
-@router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
-async def Clothes_create(file: UploadFile,
-                        db: Session = Depends(get_db),
-                        current_user: User = Depends(get_current_user)):
-    contents = await file.read()
-    encoded_image = base64.b64encode(contents)
-    color = '#ffb3ba'
+# @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
+# async def Clothes_create(file: UploadFile,
+#                         db: Session = Depends(get_db),
+#                         current_user: User = Depends(get_current_user)):
+#     contents = await file.read()
+#     encoded_image = base64.b64encode(contents)
+#     color = '#ffb3ba'
 
-    clothe = Clothes_schema.Clothes
-    clothe.Clothes_Category = "wool_coat"
-    clothe.Clothes_Image = encoded_image
-    clothe.User_Id = current_user.username
-    clothe.User = current_user
-    clothe.Clothes_Color = color
-    Clothes_crud.create_Clothes(db = db, _clothe = clothe)
+#     clothe = Clothes_schema.Clothes
+#     clothe.Clothes_Category = "wool_coat"
+#     clothe.Clothes_Image = encoded_image
+#     clothe.User_Id = current_user.username
+#     clothe.User = current_user
+#     clothe.Clothes_Color = color
+#     Clothes_crud.create_Clothes(db = db, _clothe = clothe)
+
+import sys
+import os
+
+# YOLOv5 경로 추가
+yolov5_path = 'D:/yolov5'  # YOLOv5 클론한 경로
+if yolov5_path not in sys.path:
+    sys.path.append(yolov5_path)
+
+# 경로에 models/common.py 파일이 있는지 확인
+if not os.path.exists(os.path.join(yolov5_path, 'models/common.py')):
+    raise ImportError("The YOLOv5 'models/common.py' module was not found in the specified path.")
+
+try:
+    from models.common import DetectMultiBackend
+    from utils.datasets import LoadImages
+    from utils.general import non_max_suppression, scale_coords
+except ImportError as e:
+    raise ImportError(f"Error importing YOLOv5 modules: {e}")
+
+# 모델 로드
+model = DetectMultiBackend('/mnt/data/best240506.pt', device='cpu')
+
+@router.post("/create", status_code=status.HTTP_204_NO_CONTENT)
+async def Clothes_create(file: UploadFile,
+                         db: Session = Depends(get_db),
+                         current_user: User = Depends(get_current_user)):
+    # 이미지 읽기
+    contents = await file.read()
+    encoded_image = base64.b64encode(contents).decode()
+
+    # YOLO 모델을 사용하여 이미지 판단
+    img = Image.open(BytesIO(contents)).convert('RGB')
+    img = np.array(img)
+    results = model(img)
+
+    # 비최대 억제 적용
+    results = non_max_suppression(results)
+    
+    # 판단 결과에서 필요한 정보를 추출
+    detected_classes = [model.names[int(x[-1])] for x in results[0]]
+
+    print(detected_classes)
 
 
 @router.post("/delete")
@@ -115,6 +162,7 @@ def Clothes_delete(Clothes_id: int,
 
 
 @router.post("/matching", status_code = status.HTTP_204_NO_CONTENT)
-async def Clothes_delete(color: str = Form(""), db: Session = Depends(get_db)):
+async def Clothes_delete(color: str = Form(""), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     result = await Clothes_crud.predict_color(color = color)
+    sss = Clothes_crud.Clothes_push(clothe_id = 0, user_id = current_user.username, current_temperature = 20, db = db)
     return result
