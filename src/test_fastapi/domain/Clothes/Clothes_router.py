@@ -99,7 +99,7 @@ async def Clothes_create(file: UploadFile,
     color = '#ffb3ba'
 
     clothe = Clothes_schema.Clothes
-    clothe.Clothes_Category = ""
+    clothe.Clothes_Category = "wool_coat"
     clothe.Clothes_Image = encoded_image
     clothe.User_Id = current_user.username
     clothe.User = current_user
@@ -115,7 +115,6 @@ def Clothes_delete(Clothes_id: int,
 
 
 @router.post("/matching", status_code = status.HTTP_204_NO_CONTENT)
-async def Clothes_delete(color: str = Form(""), 
-                db: Session = Depends(get_db)):
+async def Clothes_delete(color: str = Form(""), db: Session = Depends(get_db)):
     result = await Clothes_crud.predict_color(color = color)
     return result

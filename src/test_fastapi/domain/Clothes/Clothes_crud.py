@@ -6,18 +6,70 @@ from sqlalchemy.orm import Session
 from sklearn.preprocessing import LabelEncoder
 
 
+clothing_recommendations = {
+    "28~": {
+        "outerwear": [],
+        "tops": ["sleeveless", "short_sleeve shirt", "short_sleeves"],
+        "bottoms": ["half_pants", "Short_Skirt"],
+        "misc": ["Linen Dress"]
+    },
+    "23~27": {
+        "outerwear": [],
+        "tops": ["short_sleeve shirt", "long_sleeve shirt", "halfKnit", "thin_shirt", "short_sleeves"],
+        "bottoms": ["chino-cotton", "half_pants"],
+        "misc": []
+    },
+    "20~22": {
+        "outerwear": ["thin_cardigan"],
+        "tops": ["long_sleeve shirt", "hood", "hood_zip-up", "blouse", "V-neck_knit"],
+        "bottoms": ["chino-cotton", "denim_pants", "slacks", "cropped_pants", "Long_Skirt"],
+        "misc": []
+    },
+    "17~19": {
+        "outerwear": ["Windbreaker", "Blouson", "Zip-Up_Knit", "thin_jacket"],
+        "tops": ["hood", "sweatshirt", "blazer", "thin_knit"],
+        "bottoms": ["chino-cotton", "denim_pants", "slacks", "skinny_pants", "Long_Skirt"],
+        "misc": []
+    },
+    "12~16": {
+        "outerwear": ["Blouson", "Zip-Up_Knit", "denim-jacket", "cardigan", "field_jacket"],
+        "tops": ["sweatshirt", "long_sleeve shirt", "hood_zip-up", "fleece_hoodie", "Long_Skirt"],
+        "bottoms": ["denim_pants", "chino-cotton"],
+        "misc": ["stockings", "normalKnit"]
+    },
+    "9~11": {
+        "outerwear": ["Blouson", "denim-jacket", "blazer", "trench_coat", "field_jacket", "jumper"],
+        "tops": [],
+        "bottoms": ["denim_pants", "chino-cotton", "layered", "fleece"],
+        "misc": ["normalKnit"]
+    },
+    "5~8": {
+        "outerwear": ["wool_coat", "leather_jacket"],
+        "tops": [],
+        "bottoms": ["leggings", "denim_pants", "thick_pants", "fleece_pants"],
+        "misc": ["scarf", "fleece", "thermal_underwear", "normalKnit"]
+    },
+    "~4": {
+        "outerwear": ["padding", "thick_coat"],
+        "tops": [],
+        "bottoms": [],
+        "misc": []
+    }
+}
+
 tops = [""]
 bottoms = [""]
 
 
 # 카테고리 영어로 된 데이터 셋을 받아야 하는군
-# 그러고 https://namu.wiki/w/%EA%B8%B0%EC%98%A8%EB%B3%84%20%EC%98%B7%EC%B0%A8%EB%A6%BC이걸 기준
-# 값을 지정하는 코드를 작성해야함
-def create_temperature(category: str):
-    # 파이썬에서 맵의 값을 이용해서 키를 구하는 방법이 있는지 확인 해야함
-    # 존재하지 않은 값들도 추가적으로 넣어줘야함
-    # 값의 변화를 주거나 다른 값들이 들어가는 상황이 나오려나?
-    pass
+# 그러고 https://namu.wiki/w/%EA%B8%B0%EC%98%A8%EB%B3%84%20%EC%98%B7%EC%B0%A8%EB%A6%BC 이걸 기준
+def find_temperature_for_clothing(clothing_item):
+    results = []
+    for temperature, categories in clothing_recommendations.items():
+        for category, items in categories.items():
+            if clothing_item in items:
+                results.append(temperature)
+    return results
 
 def create_Clothes(db: Session, _clothe: Clothes):
     db_Clothe = Clothes(
@@ -26,8 +78,7 @@ def create_Clothes(db: Session, _clothe: Clothes):
                     Clothes_Category = _clothe.Clothes_Category,
                     Clothes_Image = _clothe.Clothes_Image,
                     Clothes_Count = 0,
-                    # 온도를 점수화
-                    Clothes_Score = 0,
+                    Clothes_Score = find_temperature_for_clothing(_clothe.Clothes_Category),
                     Clothes_Color = _clothe.Clothes_Color,
                     User_Id = _clothe.User_Id,
                     User = _clothe.User,
