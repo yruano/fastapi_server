@@ -31,9 +31,7 @@ def Clothes_check(Clothe_category: str = None,
 
 @router.post("/clothes_modify")
 async def Clothe_modify(clothe_id: int,
-                        file: Optional[UploadFile] = Form(""), 
-                        Thickness: str = Form(""),
-                        color: str = Form(""),
+                        file: Optional[UploadFile] = Form(""),
                         count:int = Form(""),
                         current_user: User = Depends(get_current_user), 
                         db: Session = Depends(get_db)):
@@ -45,11 +43,11 @@ async def Clothe_modify(clothe_id: int,
         encoded_image = ""
 
     clothe = Clothes_schema.Clothes
-    clothe.Clothes_Category = "윗옷"
-    clothe.Clothes_Id = clothe_id
+    clothe.Clothes_Category = await analyze_image(file = file)
     clothe.Clothes_Image = encoded_image
-    clothe.Clothes_Color = color
     clothe.Clothes_Count = count
+    clothe.Clothes_Id = clothe_id
+    clothe.Clothes_Color = color_extraction(file = file)
 
     clothe = Clothes_crud.modify_Clothes(user_id = User.username, modify_clothe = clothe, db = db)
     return clothe
@@ -92,21 +90,21 @@ async def user_modify(
     return user
 
 
-# @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
-# async def Clothes_create(file: UploadFile,
-#                         db: Session = Depends(get_db),
-#                         current_user: User = Depends(get_current_user)):
-#     contents = await file.read()
-#     encoded_image = base64.b64encode(contents)
-#     color = '#ffb3ba'
+@router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
+async def Clothes_create(file: UploadFile,
+                        db: Session = Depends(get_db),
+                        current_user: User = Depends(get_current_user)):
+    contents = await file.read()
+    encoded_image = base64.b64encode(contents)
 
-#     clothe = Clothes_schema.Clothes
-#     clothe.Clothes_Category = "wool_coat"
-#     clothe.Clothes_Image = encoded_image
-#     clothe.User_Id = current_user.username
-#     clothe.User = current_user
-#     clothe.Clothes_Color = color
-#     Clothes_crud.create_Clothes(db = db, _clothe = clothe)
+    clothe = Clothes_schema.Clothes
+    clothe.Clothes_Category = await analyze_image(file = file)
+    clothe.Clothes_Image = encoded_image
+    clothe.User_Id = current_user.username
+    clothe.User = current_user
+    clothe.Clothes_Color = color_extraction(file = file)
+    
+    Clothes_crud.create_Clothes(db = db, _clothe = clothe)
 
 
 @router.post("/yolo/")

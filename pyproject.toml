@@ -23,6 +23,9 @@ dependencies = [
     "torch>=2.3.1",
     "opencv-python>=4.10.0.82",
     "models>=0.9.3",
+    "rembg>=2.0.57",
+    "ultralytics>=8.2.31",
+    "extcolors>=1.0.0",
 ]
 requires-python = "==3.11.*"
 readme = "README.md"

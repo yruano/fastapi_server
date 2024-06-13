@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from learning_model import predictcolor
 
 
+# 기준 : https://namu.wiki/w/%EA%B8%B0%EC%98%A8%EB%B3%84%20%EC%98%B7%EC%B0%A8%EB%A6%BC
 clothing_recommendations = {
     "28~": {
         "outerwear": [],
@@ -56,7 +57,6 @@ clothing_recommendations = {
 }
 
 
-# 그러고 https://namu.wiki/w/%EA%B8%B0%EC%98%A8%EB%B3%84%20%EC%98%B7%EC%B0%A8%EB%A6%BC 이걸 기준
 def find_temperature_for_clothing(clothing_item):
     results = []
     for temperature, categories in clothing_recommendations.items():
@@ -132,16 +132,7 @@ def get_temperature_range(current_temperature):
         return "~4"
     return None
 
-# 옷을 선택하고 그 옷에 맞는 추천이면
-# 색 조합을 찾는다
-# 색에 맞는 옷들 중 온도에 맞는 옷을들 선별해서 출력
 
-# 온도에 맞는 옷을 추천
-# 가능한 조합들을 저장
-# 조합들 중 온도에 맞는 조합만 출력
-
-# 너무 추운 겨울에는 외투를 필수로 넣고 거기에 후두티 맨투맨 등으로 조합해서 추가적으로 넣는 방식을 쓰던
-# 12~16에 맞추어 선별을 하고 그다음 외투를 추가적을 선정하던 이런 방식
 async def Clothes_push(clothe_id: int, user_id: str, current_temperature: int, db: Session):
     clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothe_id, Clothes.User_Id == user_id).first()
     # 색 추천

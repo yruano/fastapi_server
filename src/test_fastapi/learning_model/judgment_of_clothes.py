@@ -5,6 +5,7 @@
 # 이거는 모델 설정이 잘못 되었던 내가 잘못 쓰던
 # 일단 스스로 무언가 학습을 하고 무언가 만들고 있어 이게 맞나?
 import cv2
+import json
 from rembg import remove
 from PIL import Image
 from ultralytics import YOLO
@@ -12,6 +13,7 @@ import extcolors
 import numpy as np
 from sklearn.cluster import KMeans
 from fastapi import File
+
 
 async def analyze_image(file: File):
     # 이미지를 numpy 배열로 변환
@@ -38,21 +40,19 @@ async def analyze_image(file: File):
     # YOLO 모델로 분석
     results = model(temp_output_path)
     print("\n")
-    print(results[0])
 
-    # 라벨이 없음 이거는 ai를 확인 하는게 좋겠군
+    # 분석 결과를 JSON 형식으로 변환
+    results_json = results[0].tojson()
     
-    # # 분석 결과 출력 (옷의 카테고리)
-    # categories = results[0].names  # 클래스 이름을 포함한 딕셔너리
-    # detected_labels = results.labels  # 감지된 객체의 레이블 리스트
+    # JSON 데이터 파싱
+    results_data = json.loads(results_json)
     
-    # # "hood" 카테고리를 찾아서 출력
-    # for label in detected_labels:
-    #     category = categories[label]
-    #     if category == "hood":
-    #         print("Detected category: hood")
+    # name 필드만 추출하여 출력
+    detected_names = [item["name"] for item in results_data]
+    
+    
+    return detected_names[0]
 
-    # return results
 
 def color_extraction(file: File):
     # 색상 추출
@@ -65,3 +65,4 @@ def color_extraction(file: File):
         print(f'{c[0]} : {round((c[1] / pixel_count) * 100, 2)}% ({c[1]})')
     
     print(f'Pixels in output: {pixel_output} of {pixel_count}')
+    return 'f12131'
