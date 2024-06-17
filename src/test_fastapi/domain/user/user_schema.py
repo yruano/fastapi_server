@@ -1,5 +1,4 @@
-from pydantic import BaseModel, field_validator, EmailStr
-from pydantic_core.core_schema import FieldValidationInfo
+from pydantic import BaseModel, EmailStr
 
 
 class Token(BaseModel):

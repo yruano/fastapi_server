@@ -7,6 +7,8 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from starlette import status
+from user_schema import UserModify
+from user_crud import get_user, modify_user
 
 from database import get_db
 from domain.user import user_crud, user_schema
@@ -109,3 +111,40 @@ def get_current_user(token: str = Depends(oauth2_scheme),
         if user is None:
             raise credentials_exception
         return user
+
+
+@router.get("/check")
+def user_check(current_user: User = Depends(get_current_user), 
+            db: Session = Depends(get_db)):
+    user = get_user(db = db, username = current_user.username)
+    return user
+
+
+@router.post("/modify")
+async def user_modify(
+                    password1: str = Form(""),
+                    password2: str = Form(""),
+                    User_NickName: str = Form(""),
+                    User_Instagram_ID: Optional[str] = Form(""),
+                    User_Age: Optional[int] = Form(0),
+                    file: Optional[UploadFile] = File(None),
+                    db: Session = Depends(get_db),
+                    _current_user: User = Depends(get_current_user)
+                    ):
+    if file:
+        contents = await file.read()
+        encoded_image = base64.b64encode(contents)
+    else:
+        encoded_image = ""
+
+    _user_modify = UserModify(
+        password1 = password1,
+        password2 = password2,
+        User_NickName = User_NickName,
+        User_Instagram_ID = User_Instagram_ID,
+        User_Age = User_Age,
+        User_ProfileImage = encoded_image,
+    )
+
+    user = modify_user(db = db, modify_user = _user_modify, current_user = _current_user)
+    return user
