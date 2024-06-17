@@ -6,13 +6,44 @@
 # 일단 스스로 무언가 학습을 하고 무언가 만들고 있어 이게 맞나?
 import cv2
 import json
+import extcolors
+import webcolors
+import numpy as np
 from rembg import remove
 from PIL import Image
 from ultralytics import YOLO
-import extcolors
-import numpy as np
 from sklearn.cluster import KMeans
 from fastapi import File
+from skimage import color
+
+
+color_groups_custom = {
+    "white": ["lavender","aliceblue","honeydew","azure","whitesmoke","mintcream","gainsboro","ghostwhite","oldlace","mistyrose","lavenderblush","seashell","snow","white",],  #흰색
+    "black": ["black",],  #검정색(굉장히 어두운 회색
+    "gray": ["darkslategray","darkslategrey","dimgray","dimgrey","slategray","slategrey","lightslategrey","lightslategray","gray","grey","darkgray","darkgrey",],  #회색
+    "silver": ["silver","lightgray","lightgrey",],  # 밝은 회색(light gray)
+    "light orange": ["sandybrown", "orangered", ],  # 주황색
+    "orange": ["sandybrown","orangered","darkorange","orange",],  #주황색
+    "yellow": ["gold","yellow","goldenrod","darkgoldenrod",],  #노랑색
+    "pink": ["deeppink",],  # 노랑색
+    "light pink": ["hotpink",'lightpink',"pink",],  # 핑크
+    "ivory": ["lightgoldenrodyellow","cornsilk","lemonchiffon","floralwhite","lightyellow","ivory",],  # 아이보리색(light yellow)
+    "beige": ["papayawhip","blanchedalmond","bisque","moccasin","navajowhite","peachpuff","tan","goldenrod","burlywood","palegoldenrod","wheat","beige","antiquewhite","linen",],  # 회색빛 노랑색
+    "khaki": ["darkkhaki","khaki",],  # 카키
+    "light green": ['mediumspringgreen','springgreen',"lawngreen","chartreuse","darkseagreen","lightgreen","palegreen","greenyellow",],  #블루그린, 연두색
+    "green": ["darkgreen",'green','lime',"forestgreen","seagreen","limegreen","mediumseagreen","yellowgreen",],  #초록색
+    "cyan": ['teal','darkcyan','darkturquoise','cyan','lightseagreen',"turquoise","mediumturquoise","mediumaquamarine","aquamarine",],  #청록색
+    "olive": ["darkolivegreen","olivedrab","olive",],  # 갈록색(사람들이 흔히 생각하는 카키색)
+    "light blue": ['deepskyblue','aqua',"cadetblue","cornflowerblue","skyblue","lightskyblue","lightblue","paleturquoise","lightsteelblue","powderblue","lightcyan",],  # 밝은 파랑색
+    "blue": ["darkslateblue","mediumblue","blue","dodgerblue","royalblue","steelblue",],  #파랑색
+    "navy": ["navy","darkblue","midnightblue",],  #남색
+    "light purple": ["slateblue", "mediumslateblue","mediumpurple","thistle","plum","violet",],  # 연한 보라색
+    "purple": ["indigo","rebeccapurple","purple","blueviolet","darkviolet","darkorchid","mediumorchid","orchid",],  #보라색
+    "red purple": ["darkmagenta","mediumvioletred","palevioletred","fuchsia","magenta",], #자주색
+    "light red": ["rosybrown","indianred","darksalmon",'lightcoral',"salmon","tomato","coral","lightsalmon",],  # 빨강색
+    "red": ["maroon","darkred","firebrick","crimson","red",], #빨강색
+    "brown": ["saddlebrown","sienna","brown","peru","chocolate",],  # 갈색
+}
 
 
 async def analyze_image(file: File):
@@ -54,15 +85,50 @@ async def analyze_image(file: File):
     return detected_names[0]
 
 
+def closest_color(requested_color):
+    # RGB to L*a*b* 변환 함수
+    def rgb_to_lab(rgb):
+        rgb = np.array(rgb, dtype=np.uint8).reshape(1, 1, 3)
+        lab = color.rgb2lab(rgb)
+        return lab[0, 0]
+
+    # 주어진 색상의 L*a*b* 값 계산
+    requested_lab = rgb_to_lab(requested_color)
+
+    min_distance = float('inf')
+    closest_color_name = None
+
+    for hex_value, color_name in webcolors.CSS3_HEX_TO_NAMES.items():
+        rgb = webcolors.hex_to_rgb(hex_value)
+        lab = rgb_to_lab(rgb)
+
+        # CIEDE2000 색상차 계산
+        distance = color.deltaE_ciede2000(requested_lab, lab)
+
+        if distance < min_distance:
+            min_distance = distance
+            closest_color_name = color_name
+
+    return closest_color_name
+
+
+def get_general_color_name(requested_color):
+    try:
+        closest_name = webcolors.rgb_to_name(requested_color)
+    except ValueError:
+        closest_name = closest_color(requested_color)
+
+    for group, colors in color_groups_custom.items():
+        if closest_name in colors:
+            return group
+    return "unknown"
+
+
 def color_extraction(file: File):
     # 색상 추출
     img = Image.open(file.file)
     colors, pixel_count = extcolors.extract_from_image(img)
-    
-    pixel_output = 0
-    for c in colors:
-        pixel_output += c[1]
-        print(f'{c[0]} : {round((c[1] / pixel_count) * 100, 2)}% ({c[1]})')
-    
-    print(f'Pixels in output: {pixel_output} of {pixel_count}')
-    return 'f12131'
+    print(get_general_color_name(requested_color = colors[1][0]))
+
+    return ""
+    # return get_general_color_name(requested_color = colors[1][0])

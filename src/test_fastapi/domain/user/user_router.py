@@ -53,7 +53,7 @@ async def user_create(
         User_ProfileImage = encoded_image,
     )
 
-    user = user_crud.get_existing_user(db, user_create = _user_create)
+    user = user_crud.duplication_user(db, user_create = _user_create)
     if user:
         raise HTTPException(status_code = status.HTTP_409_CONFLICT,
                             detail="이미 존재하는 사용자입니다.")

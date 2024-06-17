@@ -20,7 +20,7 @@ def create_user(db: Session, user_create: UserCreate):
     db.commit()
     return user_create.username
 
-def get_existing_user(db: Session, user_create: UserCreate):
+def duplication_user(db: Session, user_create: UserCreate):
     return db.query(User).filter(
         (User.username == user_create.username)
     ).first()
