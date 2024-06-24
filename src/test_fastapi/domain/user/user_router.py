@@ -7,9 +7,6 @@ from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
 from starlette import status
-from user_schema import UserModify
-from user_crud import get_user, modify_user
-
 from database import get_db
 from domain.user import user_crud, user_schema
 from domain.user.user_crud import pwd_context
@@ -114,9 +111,9 @@ def get_current_user(token: str = Depends(oauth2_scheme),
 
 
 @router.get("/check")
-def user_check(current_user: User = Depends(get_current_user), 
+def user_check(current_user: user_schema.User = Depends(get_current_user), 
             db: Session = Depends(get_db)):
-    user = get_user(db = db, username = current_user.username)
+    user = user_crud.get_user(db = db, username = current_user.username)
     return user
 
 
@@ -129,7 +126,7 @@ async def user_modify(
                     User_Age: Optional[int] = Form(0),
                     file: Optional[UploadFile] = File(None),
                     db: Session = Depends(get_db),
-                    _current_user: User = Depends(get_current_user)
+                    _current_user: user_schema.User = Depends(get_current_user)
                     ):
     if file:
         contents = await file.read()
@@ -137,7 +134,7 @@ async def user_modify(
     else:
         encoded_image = ""
 
-    _user_modify = UserModify(
+    _user_modify = user_schema.UserModify(
         password1 = password1,
         password2 = password2,
         User_NickName = User_NickName,
@@ -146,5 +143,5 @@ async def user_modify(
         User_ProfileImage = encoded_image,
     )
 
-    user = modify_user(db = db, modify_user = _user_modify, current_user = _current_user)
+    user = user_crud.modify_user(db = db, modify_user = _user_modify, current_user = _current_user)
     return user

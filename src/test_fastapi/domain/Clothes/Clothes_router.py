@@ -87,5 +87,6 @@ def Clothes_delete(Clothes_id: int,
 @router.post("/matching", status_code = status.HTTP_204_NO_CONTENT)
 async def Clothes_delete(color: str = Form(""), current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     result = await Clothes_crud.predict_color(color = color)
+    print(result)
     sss = Clothes_crud.Clothes_push(clothe_id = 0, user_id = current_user.username, current_temperature = 20, db = db)
     return result

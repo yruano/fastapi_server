@@ -15,7 +15,8 @@ from ultralytics import YOLO
 from sklearn.cluster import KMeans
 from fastapi import File
 from skimage import color
-
+from colormath.color_diff import delta_e_cie2000
+from colormath.color_objects import LabColor
 
 color_groups_custom = {
     "white": ["lavender","aliceblue","honeydew","azure","whitesmoke","mintcream","gainsboro","ghostwhite","oldlace","mistyrose","lavenderblush","seashell","snow","white",],  #흰색
@@ -85,6 +86,10 @@ async def analyze_image(file: File):
     return detected_names[0]
 
 
+def hex_to_rgb(hex_code):
+    return tuple(int(hex_code[i:i + 2], 16) for i in (0, 2, 4))
+
+
 def closest_color(requested_color):
     # RGB to L*a*b* 변환 함수
     def rgb_to_lab(rgb):
@@ -124,11 +129,13 @@ def get_general_color_name(requested_color):
     return "unknown"
 
 
-def color_extraction(file: File):
-    # 색상 추출
+def color_extraction(file):
     img = Image.open(file.file)
     colors, pixel_count = extcolors.extract_from_image(img)
-    print(get_general_color_name(requested_color = colors[1][0]))
-
-    return ""
-    # return get_general_color_name(requested_color = colors[1][0])
+    print(colors)
+    most_common_color = colors[1][0]
+    
+    # 일반 색상 이름 반환
+    general_color_name = get_general_color_name(most_common_color)
+    print(general_color_name)
+    return general_color_name
