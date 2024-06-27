@@ -132,12 +132,12 @@ def get_temperature_range(current_temperature):
         return "~4"
     return None
 
-
+# 특정 옷에 대해서 추천
 async def Clothes_push(clothe_id: int, user_id: str, current_temperature: int, db: Session):
     clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothe_id, Clothes.User_Id == user_id).first()
     # 색 추천
-    clothe_color = await predictcolor.predict_color(color=clothe.Clothes_Color)
-    
+    clothe_color = await predictcolor.predict_color(color = clothe.Clothes_Color)
+
     if "error" in clothe_color:
         return clothe_color
     
@@ -160,4 +160,44 @@ async def Clothes_push(clothe_id: int, user_id: str, current_temperature: int, d
             elif category in ["outerwear"]:
                 filtered_recommendations["outerwear"].extend(filtered_items)
     
+    return filtered_recommendations
+
+# 온도만 가지고 추천
+async def Clothes_push(user_id: str, current_temperature: int, db: Session):
+    # 옷의 색을 저장
+    clothes_color = []
+
+    # 현재 온도
+    temperature_range = get_temperature_range(current_temperature)
+    # 온도에 맞는 바지 카데고리를 저장
+    bottoms_recommendations = clothing_recommendations[temperature_range]["bottoms"]
+
+    # 카데고리에 맞는 색을 저장
+    for bottom in bottoms_recommendations:
+        clothe = db.query(Clothes).filter(Clothes.Clothes_Category == bottom, Clothes.User_Id == user_id).first()
+        clothes_color.append(clothe.Clothes_Color)
+    
+
+    recommendations = clothing_recommendations.get(temperature_range, {})
+    filtered_recommendations = {"tops": [], "bottoms": [], "outerwear": []}
+
+    for color in clothes_color:
+        clothe_color = await predictcolor.predict_color(color = color)
+        if "error" in clothe_color:
+            return clothe_color
+        
+        for category, items in recommendations.items():
+            filtered_items = []
+            for item in items:
+                for predicted_color in clothe_color:
+                    if predicted_color in item:
+                        filtered_items.append(item)
+            if filtered_items:
+                if category in ["tops"]:
+                    filtered_recommendations["tops"].extend(filtered_items)
+                elif category in ["bottoms"]:
+                    filtered_recommendations["bottoms"].extend(filtered_items)
+                elif category in ["outerwear"]:
+                    filtered_recommendations["outerwear"].extend(filtered_items)
+
     return filtered_recommendations
