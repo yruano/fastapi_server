@@ -63,7 +63,7 @@ async def analyze_image(file: File):
     equalized_img = cv2.equalizeHist(gray_img)
     
     # YOLO 모델 로드
-    model = YOLO("best240627v10.pt")
+    model = YOLO("best240702v10.pt")
     
     # 결과 저장할 임시 파일 경로 설정
     temp_output_path = "temp_output.png"

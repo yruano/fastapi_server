@@ -1,7 +1,7 @@
 from datetime import datetime
 from models import Clothes
 from sqlalchemy.orm import Session
-from learning_model import predictcolor
+from learning_model import predictcolor, cody
 
 
 # 기준 : https://namu.wiki/w/%EA%B8%B0%EC%98%A8%EB%B3%84%20%EC%98%B7%EC%B0%A8%EB%A6%BC
@@ -10,51 +10,53 @@ clothing_recommendations = {
         "outerwear": [],
         "tops": ["sleeveless", "short_sleeve shirt", "short_sleeves"],
         "bottoms": ["half_pants", "Short_Skirt"],
-        "misc": ["Linen Dress"]
+        "misc": ["Linen Dress", "one-piece_dress"]
     },
     "23~27": {
         "outerwear": [],
         "tops": ["short_sleeve shirt", "long_sleeve shirt", "halfKnit", "thin_shirt", "short_sleeves"],
-        "bottoms": ["chino-cotton", "half_pants"],
+        "bottoms": ["chino-cotton", "half_pants", "Short_Skirt"],
         "misc": []
     },
     "20~22": {
         "outerwear": ["thin_cardigan"],
         "tops": ["long_sleeve shirt", "hood", "hood_zip-up", "blouse", "V-neck_knit"],
         "bottoms": ["chino-cotton", "denim_pants", "slacks", "cropped_pants", "Long_Skirt"],
-        "misc": []
+        "misc": ["denim-shirts"]
     },
     "17~19": {
         "outerwear": ["Windbreaker", "Blouson", "Zip-Up_Knit", "thin_jacket"],
         "tops": ["hood", "sweatshirt", "blazer", "thin_knit"],
         "bottoms": ["chino-cotton", "denim_pants", "slacks", "skinny_pants", "Long_Skirt"],
-        "misc": []
+        "misc": ["denim-shirts"]
     },
     "12~16": {
         "outerwear": ["Blouson", "Zip-Up_Knit", "denim-jacket", "cardigan", "field_jacket"],
-        "tops": ["sweatshirt", "long_sleeve shirt", "hood_zip-up", "fleece_hoodie", "Long_Skirt"],
-        "bottoms": ["denim_pants", "chino-cotton"],
-        "misc": ["stockings", "normalKnit"]
+        "tops": ["sweatshirt", "long_sleeve shirt", "hood_zip-up", "fleece_hoodie"],
+        "bottoms": ["denim_pants", "chino-cotton", "Long_Skirt"],
+        "misc": ["stockings", "normalKnit", "one-piece_dress"]
     },
     "9~11": {
         "outerwear": ["Blouson", "denim-jacket", "blazer", "trench_coat", "field_jacket", "jumper"],
-        "tops": [],
+        "tops": ["normalKnit"],
         "bottoms": ["denim_pants", "chino-cotton", "layered", "fleece"],
-        "misc": ["normalKnit"]
+        "misc": ["one-piece_dress", "denim-shirts"]
     },
     "5~8": {
-        "outerwear": ["wool_coat", "leather_jacket"],
-        "tops": [],
+        "outerwear": ["wool_coat", "leather jacket"],
+        "tops": ["normalKnit", "fleece_jacket"],
         "bottoms": ["leggings", "denim_pants", "thick_pants", "fleece_pants"],
-        "misc": ["scarf", "fleece", "thermal_underwear", "normalKnit"]
+        "misc": ["scarf", "fleece", "thermal_underwear"]
     },
     "~4": {
-        "outerwear": ["padding", "thick_coat"],
-        "tops": [],
-        "bottoms": [],
-        "misc": []
+        "outerwear": ["padding", "thick_coat", "long-padded-coat", "padded-coat"],
+        "tops": ["normalKnit"],
+        "bottoms": ["denim_pants", "training/jogger_pants"],
+        "misc": ["scarf", "thermal_underwear"]
     }
 }
+
+
 
 
 def find_temperature_for_clothing(clothing_item):
@@ -145,6 +147,9 @@ async def Clothes_push(clothe_id: int, user_id: str, current_temperature: int, d
     temperature_range = get_temperature_range(current_temperature)
     recommendations = clothing_recommendations.get(temperature_range, {})
     filtered_recommendations = {"tops": [], "bottoms": [], "outerwear": []}
+
+    # 현재 옷 중에서 잘 맞는 옷 카테고리
+    nomination_cody = await cody.predict_category(category = clothe.Clothes_Category)
     
     for category, items in recommendations.items():
         filtered_items = []
@@ -153,11 +158,11 @@ async def Clothes_push(clothe_id: int, user_id: str, current_temperature: int, d
                 if predicted_color in item:
                     filtered_items.append(item)
         if filtered_items:
-            if category in ["tops"]:
+            if category in ["tops"] and category in nomination_cody:
                 filtered_recommendations["tops"].extend(filtered_items)
-            elif category in ["bottoms"]:
+            elif category in ["bottoms"] and category in nomination_cody:
                 filtered_recommendations["bottoms"].extend(filtered_items)
-            elif category in ["outerwear"]:
+            elif category in ["outerwear"] and category in nomination_cody:
                 filtered_recommendations["outerwear"].extend(filtered_items)
     
     return filtered_recommendations
@@ -165,23 +170,29 @@ async def Clothes_push(clothe_id: int, user_id: str, current_temperature: int, d
 # 온도만 가지고 추천
 async def Clothes_push(user_id: str, current_temperature: int, db: Session):
     # 옷의 색을 저장
-    clothes_color = []
+    clothe_color = list(map(str, []))
+    # 옷의 카테고리 저장
+    clothe_category = list(map(str, []))
 
     # 현재 온도
     temperature_range = get_temperature_range(current_temperature)
     # 온도에 맞는 바지 카데고리를 저장
     bottoms_recommendations = clothing_recommendations[temperature_range]["bottoms"]
+    
+    # 카테고리 저장
+    for bottom in bottoms_recommendations:
+        nomination_cody = await cody.predict_category(category = clothe.Clothes_Category)
+        clothe_category[bottom].append(nomination_cody)
 
-    # 카데고리에 맞는 색을 저장
+    # 카테고리의 색을 저장
     for bottom in bottoms_recommendations:
         clothe = db.query(Clothes).filter(Clothes.Clothes_Category == bottom, Clothes.User_Id == user_id).first()
-        clothes_color.append(clothe.Clothes_Color)
-    
+        clothe_color[bottom].append(clothe.Clothes_Color)
 
     recommendations = clothing_recommendations.get(temperature_range, {})
     filtered_recommendations = {"tops": [], "bottoms": [], "outerwear": []}
 
-    for color in clothes_color:
+    for color in clothe_color:
         clothe_color = await predictcolor.predict_color(color = color)
         if "error" in clothe_color:
             return clothe_color

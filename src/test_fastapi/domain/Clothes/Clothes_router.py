@@ -12,6 +12,8 @@ from models import User
 
 from learning_model.judgment_of_clothes import analyze_image, color_extraction
 
+from learning_model.cody import predict_category
+
 
 router = APIRouter(
     prefix="/api/Clothes",
@@ -73,6 +75,7 @@ async def upload_files(file: UploadFile = File(...)):
     # 이미지 분석
     results = await analyze_image(file = file)
     color_extraction(file = file)
+    print(await predict_category(category = results))
     
     return results
 

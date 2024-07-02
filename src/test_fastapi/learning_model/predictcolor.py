@@ -33,5 +33,4 @@ async def predict_color(color: str):
     # 숫자를 다시 색상으로 변환
     predicted_bottoms = le.inverse_transform(top_n_predictions[0])
 
-    print(predicted_bottoms.tolist())
     return predicted_bottoms.tolist()
