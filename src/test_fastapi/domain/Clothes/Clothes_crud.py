@@ -8,25 +8,25 @@ from learning_model import predictcolor, cody
 clothing_recommendations = {
     "28~": {
         "outerwear": [],
-        "tops": ["sleeveless", "short_sleeve shirt", "short_sleeves"],
+        "tops": ["sleeveless", "short_sleeve shirt", "short_sleeves", "short_sleeves_knit"],
         "bottoms": ["half_pants", "Short_Skirt"],
         "misc": ["Linen Dress", "one-piece_dress"]
     },
     "23~27": {
         "outerwear": [],
-        "tops": ["short_sleeve shirt", "long_sleeve shirt", "halfKnit", "thin_shirt", "short_sleeves"],
+        "tops": ["short_sleeve shirt", "long_sleeve shirt", "normalKnit", "thin_shirt", "short_sleeves", "short_sleeves_knit"],
         "bottoms": ["chino-cotton", "half_pants", "Short_Skirt"],
         "misc": []
     },
     "20~22": {
         "outerwear": ["thin_cardigan"],
-        "tops": ["long_sleeve shirt", "hood", "hood_zip-up", "blouse", "V-neck_knit"],
+        "tops": ["long_sleeve shirt", "hood", "hood_zip-up", "blouse", "normalKnit"],
         "bottoms": ["chino-cotton", "denim_pants", "slacks", "cropped_pants", "Long_Skirt"],
         "misc": ["denim-shirts"]
     },
     "17~19": {
         "outerwear": ["Windbreaker", "Blouson", "Zip-Up_Knit", "thin_jacket"],
-        "tops": ["hood", "sweatshirt", "blazer", "thin_knit"],
+        "tops": ["hood", "sweatshirt", "blazer", "normalKnit"],
         "bottoms": ["chino-cotton", "denim_pants", "slacks", "skinny_pants", "Long_Skirt"],
         "misc": ["denim-shirts"]
     },
@@ -55,8 +55,6 @@ clothing_recommendations = {
         "misc": ["scarf", "thermal_underwear"]
     }
 }
-
-
 
 
 def find_temperature_for_clothing(clothing_item):
