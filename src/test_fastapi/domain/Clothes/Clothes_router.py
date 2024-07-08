@@ -10,8 +10,8 @@ from domain.Clothes import Clothes_schema, Clothes_crud
 from domain.user.user_router import get_current_user
 from models import User
 
-from learning_model.judgment_of_clothes import analyze_image, color_extraction
-
+from learning_model.judgment_of_clothes import analyze_image
+from learning_model.discrimination_color import color_extraction
 from learning_model.cody import predict_category
 
 
@@ -68,13 +68,14 @@ async def Clothes_create(file: UploadFile,
     clothe.Clothes_Color = color_extraction(file = file)
     
     Clothes_crud.create_Clothes(db = db, _clothe = clothe)
+    return clothe.Clothes_Color
 
 
 @router.post("/yolo/")
 async def upload_files(file: UploadFile = File(...)):
     # 이미지 분석
     results = await analyze_image(file = file)
-    color_extraction(file = file)
+    print(color_extraction(file = file))
     print(await predict_category(category = results))
     
     return results
