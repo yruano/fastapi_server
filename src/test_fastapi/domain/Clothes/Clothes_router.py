@@ -57,18 +57,19 @@ async def Clothe_modify(clothe_id: int,
 async def Clothes_create(file: UploadFile,
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user)):
+    clothe = Clothes_schema.Clothes
+
     if file is not None:
+        clothe.Clothes_Category = await analyze_image(file = file)
+        clothe.Clothes_Color = color_extraction(file = file)
         contents = await file.read()
         encoded_image = base64.b64encode(contents)
     else:
         return "사진이 없습니다."
 
-    clothe = Clothes_schema.Clothes
-    clothe.Clothes_Category = await analyze_image(file = file)
     clothe.Clothes_Image = encoded_image
     clothe.User_Id = current_user.username
     clothe.User = current_user
-    clothe.Clothes_Color = color_extraction(file = file)
     
     Clothes_crud.create_Clothes(db = db, _clothe = clothe)
     return clothe.Clothes_Color
