@@ -1,4 +1,5 @@
 import base64
+import copy
 from pydantic import EmailStr
 from fastapi import APIRouter, Depends, UploadFile, File, Form
 from sqlalchemy.orm import Session
@@ -57,18 +58,20 @@ async def Clothe_modify(clothe_id: int,
 async def Clothes_create(file: UploadFile,
                         db: Session = Depends(get_db),
                         current_user: User = Depends(get_current_user)):
+    
+    encode_copy = copy.deepcopy(file)
+    category_copy = copy.deepcopy(file)
+    color_copy = copy.deepcopy(file)
+
+    
+    contents = await encode_copy.read()
+    encoded_image = base64.b64encode(contents)
+
     clothe = Clothes_schema.Clothes
-
-    if file is not None:
-        clothe.Clothes_Category = await analyze_image(file = file)
-        clothe.Clothes_Color = color_extraction(file = file)
-        contents = await file.read()
-        encoded_image = base64.b64encode(contents)
-    else:
-        return "사진이 없습니다."
-
+    clothe.Clothes_Category = await analyze_image(file = category_copy)
     clothe.Clothes_Image = encoded_image
     clothe.User_Id = current_user.username
+    clothe.Clothes_Color = color_extraction(file = color_copy)
     clothe.User = current_user
     
     Clothes_crud.create_Clothes(db = db, _clothe = clothe)
