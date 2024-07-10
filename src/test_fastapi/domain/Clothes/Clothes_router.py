@@ -55,30 +55,23 @@ async def Clothe_modify(clothe_id: int,
 
 
 @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
-async def Clothes_create(file: UploadFile, 
+async def Clothes_create(file: UploadFile,
+                        category: str,
+                        color: str,
                         background_tasks: BackgroundTasks, 
                         db: Session = Depends(get_db), 
                         current_user: User = Depends(get_current_user)):
 
-    encode_copy = copy.deepcopy(file)
-    category_copy = copy.deepcopy(file)
-    color_copy = copy.deepcopy(file)
-    
-    category = await analyze_image(file = category_copy)
-    color = color_extraction(file = color_copy)
-
     clothe_data = {
         "category": category,
-        "image": encode_copy,
+        "image": file,
         "color": color,
         "user_id" : current_user.username,
         "user" : current_user
     }
-
+    
     # Add database saving task to background
     background_tasks.add_task(Clothes_crud.create_Clothes, db, clothe_data, current_user)
-    
-    return {"category": category, "color": color}
 
 
 @router.post("/yolo/", status_code = status.HTTP_204_NO_CONTENT)

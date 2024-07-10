@@ -75,7 +75,7 @@ async def create_Clothes(db: Session, _clothe: dict):
         Clothes_LastFit_Date = datetime.now(),
         Clothes_Category = _clothe["category"],
         Clothes_Image = encoded_image,
-        Clothes_Count = 0,  # 예시 값, 필요에 따라 수정
+        Clothes_Count = 0,
         Clothes_Score = find_temperature_for_clothing(_clothe["category"]),
         Clothes_Color = _clothe["color"],
         User_Id = _clothe["user_id"],
