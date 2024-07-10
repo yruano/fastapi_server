@@ -68,8 +68,7 @@ def find_temperature_for_clothing(clothing_item):
 
 
 async def create_Clothes(db: Session, _clothe: dict):
-    contents = await _clothe["image"].read()
-    encoded_image = base64.b64encode(contents)
+    encoded_image = base64.b64encode(_clothe["image"])
     db_Clothe = Clothes(
         Clothes_Create_Date = datetime.now(),
         Clothes_LastFit_Date = datetime.now(),

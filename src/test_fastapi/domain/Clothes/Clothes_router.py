@@ -66,7 +66,7 @@ async def Clothes_create(
     print(f"Received category: {category}, color: {color}, file: {file.filename if file else 'No file'}, user: {current_user.username}")
 
     clothe_data = {
-        "image": file,
+        "image": await file.read(),
         "category": category,
         "color": color,
         "user_id" : current_user.username,
