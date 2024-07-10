@@ -62,7 +62,7 @@ async def Clothes_create(
     color: str = Form(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
-):
+    ):
     print(f"Received category: {category}, color: {color}, file: {file.filename if file else 'No file'}, user: {current_user.username}")
 
     clothe_data = {
@@ -74,7 +74,7 @@ async def Clothes_create(
     }
 
     # Add database saving task to background
-    background_tasks.add_task(Clothes_crud.create_Clothes, db, clothe_data, current_user)
+    background_tasks.add_task(Clothes_crud.create_Clothes, db, clothe_data)
 
 
 @router.post("/yolo", status_code = status.HTTP_200_OK)
