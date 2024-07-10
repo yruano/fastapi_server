@@ -55,12 +55,15 @@ async def Clothe_modify(clothe_id: int,
 
 
 @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
-async def Clothes_create(file: UploadFile,
-                        category: str,
-                        color: str,
-                        background_tasks: BackgroundTasks, 
-                        db: Session = Depends(get_db), 
-                        current_user: User = Depends(get_current_user)):
+async def Clothes_create(
+    file: UploadFile,
+    background_tasks: BackgroundTasks,
+    category: str = Form(...),
+    color: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    print(f"Received category: {category}, color: {color}, file: {file.filename if file else 'No file'}, user: {current_user.username}")
 
     clothe_data = {
         "image": file,
@@ -69,12 +72,12 @@ async def Clothes_create(file: UploadFile,
         "user_id" : current_user.username,
         "user" : current_user
     }
-    
+
     # Add database saving task to background
     background_tasks.add_task(Clothes_crud.create_Clothes, db, clothe_data, current_user)
 
 
-@router.post("/yolo", status_code = status.HTTP_204_NO_CONTENT)
+@router.post("/yolo", status_code = status.HTTP_200_OK)
 async def upload_files(file: UploadFile):
     # analyze_image에 사용할 파일을 읽기
     category_copy = copy.deepcopy(file)
