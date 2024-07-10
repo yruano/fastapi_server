@@ -1,7 +1,7 @@
 import base64
 import copy
 from pydantic import EmailStr
-from fastapi import APIRouter, Depends, UploadFile, File, Form
+from fastapi import APIRouter, Depends, UploadFile, File, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import Optional
 
@@ -55,41 +55,47 @@ async def Clothe_modify(clothe_id: int,
 
 
 @router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
-async def Clothes_create(file: UploadFile,
-                        db: Session = Depends(get_db),
+async def Clothes_create(file: UploadFile, 
+                        background_tasks: BackgroundTasks, 
+                        db: Session = Depends(get_db), 
                         current_user: User = Depends(get_current_user)):
-    
+
     encode_copy = copy.deepcopy(file)
     category_copy = copy.deepcopy(file)
     color_copy = copy.deepcopy(file)
-
     
-    contents = await encode_copy.read()
-    encoded_image = base64.b64encode(contents)
+    category = await analyze_image(file = category_copy)
+    color = color_extraction(file = color_copy)
 
-    clothe = Clothes_schema.Clothes
-    clothe.Clothes_Category = await analyze_image(file = category_copy)
-    clothe.Clothes_Image = encoded_image
-    clothe.User_Id = current_user.username
-    clothe.Clothes_Color = color_extraction(file = color_copy)
-    clothe.User = current_user
+    clothe_data = {
+        "category": category,
+        "image": encode_copy,
+        "color": color,
+        "user_id" : current_user.username,
+        "user" : current_user
+    }
+
+    # Add database saving task to background
+    background_tasks.add_task(Clothes_crud.create_Clothes, db, clothe_data, current_user)
     
-    Clothes_crud.create_Clothes(db = db, _clothe = clothe)
-    return clothe.Clothes_Color
+    return {"category": category, "color": color}
 
 
-@router.post("/yolo/")
-async def upload_files(file: UploadFile = File(...)):
-    # 이미지 분석
-    results = await analyze_image(file = file)
-    print(color_extraction(file = file))
-    print(await predict_category(category = results))
-    
-    return results
+@router.post("/yolo/", status_code = status.HTTP_204_NO_CONTENT)
+async def upload_files(file: UploadFile):
+    # analyze_image에 사용할 파일을 읽기
+    category_copy = copy.deepcopy(file)
+    # color_extraction에 사용할 파일을 읽기
+    color_copy = copy.deepcopy(file)
+
+    results = await analyze_image(file = category_copy)
+    color = color_extraction(file = color_copy)
+
+    return  {"category": results, "color": color}
 
 
 @router.delete("/delete")
-def Clothes_delete(Clothes_id: int, 
+def Clothes_delete(Clothes_id: int,
                 current_user: User = Depends(get_current_user), 
                 db: Session = Depends(get_db)):
     clothe = Clothes_crud.delete_Clothes_data(db = db, user_id = current_user.username, Clothes_id = Clothes_id)

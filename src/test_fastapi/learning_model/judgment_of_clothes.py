@@ -82,5 +82,4 @@ async def analyze_image(file: File):
     # name 필드만 추출하여 출력
     detected_names = [item["name"] for item in results_data]
     
-    
     return detected_names[0]

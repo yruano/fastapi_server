@@ -96,4 +96,5 @@ def color_extraction(file):
     img_np = np.array(img)
     dominant_color_center = find_optimal_clusters(img_np)
     general_color_name = get_general_color_name(dominant_color_center)
+
     return general_color_name

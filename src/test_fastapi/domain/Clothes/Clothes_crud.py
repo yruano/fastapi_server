@@ -1,3 +1,4 @@
+import base64
 from datetime import datetime
 from models import Clothes
 from sqlalchemy.orm import Session
@@ -65,18 +66,21 @@ def find_temperature_for_clothing(clothing_item):
                 results.append(temperature)
     return results
 
-def create_Clothes(db: Session, _clothe: Clothes):
+
+async def create_Clothes(db: Session, _clothe: dict):
+    contents = await _clothe["image"].read()
+    encoded_image = base64.b64encode(contents)
     db_Clothe = Clothes(
-                    Clothes_Create_Date = datetime.now(),
-                    Clothes_LastFit_Date = datetime.now(),
-                    Clothes_Category = _clothe.Clothes_Category,
-                    Clothes_Image = _clothe.Clothes_Image,
-                    Clothes_Count = 0,
-                    Clothes_Score = find_temperature_for_clothing(_clothe.Clothes_Category),
-                    Clothes_Color = _clothe.Clothes_Color,
-                    User_Id = _clothe.User_Id,
-                    User = _clothe.User,
-                )
+        Clothes_Create_Date = datetime.now(),
+        Clothes_LastFit_Date = datetime.now(),
+        Clothes_Category = _clothe["category"],
+        Clothes_Image = encoded_image,
+        Clothes_Count = 0,  # 예시 값, 필요에 따라 수정
+        Clothes_Score = find_temperature_for_clothing(_clothe["category"]),
+        Clothes_Color = _clothe["color"],
+        User_Id = _clothe["user_id"],
+        User = _clothe["user"]
+    )
     db.add(db_Clothe)
     db.commit()
 
