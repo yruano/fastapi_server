@@ -74,7 +74,7 @@ async def Clothes_create(file: UploadFile,
     background_tasks.add_task(Clothes_crud.create_Clothes, db, clothe_data, current_user)
 
 
-@router.post("/yolo/", status_code = status.HTTP_204_NO_CONTENT)
+@router.post("/yolo", status_code = status.HTTP_204_NO_CONTENT)
 async def upload_files(file: UploadFile):
     # analyze_image에 사용할 파일을 읽기
     category_copy = copy.deepcopy(file)
