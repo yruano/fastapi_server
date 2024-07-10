@@ -63,8 +63,8 @@ async def Clothes_create(file: UploadFile,
                         current_user: User = Depends(get_current_user)):
 
     clothe_data = {
-        "category": category,
         "image": file,
+        "category": category,
         "color": color,
         "user_id" : current_user.username,
         "user" : current_user
