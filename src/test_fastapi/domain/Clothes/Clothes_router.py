@@ -63,7 +63,9 @@ async def Clothes_create(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
     ):
-    print(f"Received category: {category}, color: {color}, file: {file.filename if file else 'No file'}, user: {current_user.username}")
+    
+    if not Clothes_crud.image_doublecheck(db = db, image = await file.read(), user_id = current_user.username):
+        return "이미 존재하는 이미지 입니다."
 
     clothe_data = {
         "image": await file.read(),

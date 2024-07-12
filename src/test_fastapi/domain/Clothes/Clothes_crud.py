@@ -67,7 +67,15 @@ def find_temperature_for_clothing(clothing_item):
     return results
 
 
-async def create_Clothes(db: Session, _clothe: dict):
+def image_doublecheck(db: Session, image: bytes, user_id: str):
+    encoded_image = base64.b64encode(image)
+    double_iamge = db.query(Clothes).filter(Clothes.User_Id == user_id, Clothes.Clothes_Image == encoded_image).first()
+    if double_iamge is not None:
+        return False
+    return True
+
+
+def create_Clothes(db: Session, _clothe: dict):
     encoded_image = base64.b64encode(_clothe["image"])
     db_Clothe = Clothes(
         Clothes_Create_Date = datetime.now(),
@@ -100,6 +108,8 @@ def modify_Clothes(user_id: str, modify_clothe: Clothes, db: Session):
 def check_Clothes_data(category: str, clothe_id: int, db: Session, user_id: str):
     if category is None and clothe_id is None:
         clothe = db.query(Clothes).filter(Clothes.User_Id == user_id).all()
+    elif category is None and clothe_id is not None:
+        clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothe_id, Clothes.User_Id == user_id).all()
     else:
         clothe = db.query(Clothes).filter(Clothes.Clothes_Category == category, Clothes.Clothes_Id == clothe_id, Clothes.User_Id == user_id).all()
     return clothe
