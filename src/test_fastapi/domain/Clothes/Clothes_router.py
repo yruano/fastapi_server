@@ -12,6 +12,7 @@ from database import get_db
 from domain.Clothes import Clothes_schema, Clothes_crud
 from domain.user.user_router import get_current_user
 from models import User
+from fastapi import HTTPException
 
 from learning_model.judgment_of_clothes import analyze_image
 from learning_model.discrimination_color import color_extraction
@@ -57,7 +58,7 @@ async def Clothe_modify(clothe_id: int,
     return clothe
 
 
-@router.post("/create", status_code = status.HTTP_204_NO_CONTENT)
+@router.post("/create", status_code = status.HTTP_200_OK)
 async def Clothes_create(
     file: UploadFile,
     background_tasks: BackgroundTasks,
@@ -66,9 +67,8 @@ async def Clothes_create(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
     ):
-    
-    if not Clothes_crud.image_doublecheck(db = db, image = await file.read(), user_id = current_user.username):
-        return "이미 존재하는 이미지 입니다."
+    if not Clothes_crud.image_doublecheck(db=db, image=await file.read(), user_id=current_user.username):
+        raise HTTPException(status_code=400, detail="이미 존재하는 이미지 입니다.")
 
     contents = await file.read()
     nparr = np.frombuffer(contents, np.uint8)
