@@ -34,9 +34,26 @@ color_groups_custom = {
 
 
 def extract_rgb_values(image):
-    height, width, _ = image.shape
+    if len(image.shape) == 3:
+        height, width, _ = image.shape
+    else:
+        height, width = image.shape  # 흑백 이미지의 경우
+
+    # 이미지 중앙 값 계산
     center_y, center_x = height // 2, width // 2
-    rgb_values = [image[y, x] for y in range(center_y - 50, center_y + 50) for x in range(center_x - 50, center_x + 50)]
+
+    # 사각형 영역 지정
+    region_size_y, region_size_x = height // 6, width // 6
+
+    # 샘플링 영역의 시작 및 종료 지점을 계산
+    start_y, end_y = center_y - region_size_y, center_y + region_size_y
+    start_x, end_x = center_x - region_size_x, center_x + region_size_x
+
+    # 사각형 영역의 rgb 값 추출
+    if len(image.shape) == 3:
+        rgb_values = [image[y, x] for y in range(start_y, end_y) for x in range(start_x, end_x)]
+    else:  # 흑백 이미지의 경우, 모든 채널 값이 동일하므로 하나의 값만 사용
+        rgb_values = [[image[y, x], image[y, x], image[y, x]] for y in range(start_y, end_y) for x in range(start_x, end_x)]
     return rgb_values
 
 
@@ -48,7 +65,7 @@ def find_optimal_clusters(image, max_clusters=100):
         kmeans = KMeans(n_clusters=i, random_state=42)
         kmeans.fit(rgb_array)
         inertias.append(kmeans.inertia_)
-        
+
     optimal_clusters = inertias.index(min(inertias)) + 1
     kmeans = KMeans(n_clusters=optimal_clusters, random_state=42)
     kmeans.fit(rgb_array)

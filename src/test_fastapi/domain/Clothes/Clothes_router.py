@@ -4,7 +4,9 @@ from pydantic import EmailStr
 from fastapi import APIRouter, Depends, UploadFile, File, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import Optional
-
+import numpy as np
+import cv2
+from rembg import remove
 from starlette import status
 from database import get_db
 from domain.Clothes import Clothes_schema, Clothes_crud
@@ -14,6 +16,7 @@ from models import User
 from learning_model.judgment_of_clothes import analyze_image
 from learning_model.discrimination_color import color_extraction
 from learning_model.cody import predict_category
+from PIL import Image
 
 
 router = APIRouter(
@@ -67,12 +70,22 @@ async def Clothes_create(
     if not Clothes_crud.image_doublecheck(db = db, image = await file.read(), user_id = current_user.username):
         return "이미 존재하는 이미지 입니다."
 
+    contents = await file.read()
+    nparr = np.frombuffer(contents, np.uint8)
+    img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+    # 배경 제거
+    img_no_bg = remove(img_np)
+    # 이미지 직렬화 (예시: base64 인코딩)
+    _, img_encoded = cv2.imencode('.png', img_no_bg)
+    img_data = img_encoded.tobytes()
+
     clothe_data = {
-        "image": await file.read(),
+        "image": img_data,  # 직렬화된 이미지
         "category": category,
         "color": color,
-        "user_id" : current_user.username,
-        "user" : current_user
+        "user_id": current_user.username if current_user else None,
+        "user": current_user
     }
 
     # Add database saving task to background
@@ -85,6 +98,10 @@ async def upload_files(file: UploadFile):
     category_copy = copy.deepcopy(file)
     # color_extraction에 사용할 파일을 읽기
     color_copy = copy.deepcopy(file)
+
+    img = Image.open(color_copy.file)
+    width, height = img.size
+    print(f"Width: {width}, Height: {height}")
 
     results = await analyze_image(file = category_copy)
     color = color_extraction(file = color_copy)
@@ -99,7 +116,7 @@ def Clothes_delete(Clothes_id: int,
     clothe = Clothes_crud.delete_Clothes_data(db = db, user_id = current_user.username, Clothes_id = Clothes_id)
 
 
-@router.post("/matching", status_code = status.HTTP_204_NO_CONTENT)
+@router.post("/matching", status_code = status.HTTP_200_OK)
 async def Clothes_matching(temperature: int, Clothes_id: int = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if Clothes_id is not None:
         matching = Clothes_crud.Clothes_push(clothe_id = Clothes_id, user_id = current_user.username, current_temperature = temperature, db = db)
