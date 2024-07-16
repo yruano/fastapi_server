@@ -67,10 +67,10 @@ async def Clothes_create(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
     ):
-    if not Clothes_crud.image_doublecheck(db=db, image=await file.read(), user_id=current_user.username):
-        raise HTTPException(status_code=400, detail="이미 존재하는 이미지 입니다.")
-
     contents = await file.read()
+
+    if not Clothes_crud.image_doublecheck(db=db, image=contents, user_id=current_user.username):
+        raise HTTPException(status_code=400, detail="이미 존재하는 이미지 입니다.")
     nparr = np.frombuffer(contents, np.uint8)
     img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
@@ -118,8 +118,9 @@ def Clothes_delete(Clothes_id: int,
 
 @router.post("/matching", status_code = status.HTTP_200_OK)
 async def Clothes_matching(temperature: int, Clothes_id: int = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    print(temperature)
     if Clothes_id is not None:
-        matching = Clothes_crud.Clothes_push(clothe_id = Clothes_id, user_id = current_user.username, current_temperature = temperature, db = db)
+        matching = await Clothes_crud.Clothes_push(clothe_id = Clothes_id, user_id = current_user.username, current_temperature = temperature, db = db)
     else:
-        matching = Clothes_crud.Clothes_push(user_id = current_user.username, current_temperature = temperature, db = db)
+        matching = await Clothes_crud.Clothes_push(user_id = current_user.username, current_temperature = temperature, db = db)
     return matching

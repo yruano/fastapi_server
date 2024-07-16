@@ -11,37 +11,37 @@ clothing_recommendations = {
         "outerwear": [],
         "tops": ["sleeveless", "short_sleeve shirt", "short_sleeves", "short_sleeves_knit"],
         "bottoms": ["half_pants", "Short_Skirt"],
-        "misc": ["Linen Dress", "one-piece_dress"]
+        "misc": ["one-piece_dress"]
     },
     "23~27": {
         "outerwear": [],
-        "tops": ["short_sleeve shirt", "long_sleeve shirt", "normalKnit", "thin_shirt", "short_sleeves", "short_sleeves_knit"],
+        "tops": ["short_sleeve shirt", "long_sleeve shirt", "normalKnit", "short_sleeves", "short_sleeves_knit"],
         "bottoms": ["chino-cotton", "half_pants", "Short_Skirt"],
         "misc": []
     },
     "20~22": {
-        "outerwear": ["thin_cardigan"],
-        "tops": ["long_sleeve shirt", "hood", "hood_zip-up", "blouse", "normalKnit"],
-        "bottoms": ["chino-cotton", "denim_pants", "slacks", "cropped_pants", "Long_Skirt"],
+        "outerwear": [],
+        "tops": ["long_sleeve shirt", "hood", "hood_zip-up", "normalKnit"],
+        "bottoms": ["chino-cotton", "denim_pants", "slacks", "half_pants", "Long_Skirt"],
         "misc": ["denim-shirts"]
     },
     "17~19": {
-        "outerwear": ["Windbreaker", "Blouson", "Zip-Up_Knit", "thin_jacket"],
-        "tops": ["hood", "sweatshirt", "blazer", "normalKnit"],
-        "bottoms": ["chino-cotton", "denim_pants", "slacks", "skinny_pants", "Long_Skirt"],
+        "outerwear": ["Windbreaker", "Blouson", "Zip-Up_Knit","blazer"],
+        "tops": ["hood", "sweatshirt", "normalKnit"],
+        "bottoms": ["chino-cotton", "denim_pants", "slacks", "Long_Skirt"],
         "misc": ["denim-shirts"]
     },
     "12~16": {
-        "outerwear": ["Blouson", "Zip-Up_Knit", "denim-jacket", "cardigan", "field_jacket"],
-        "tops": ["sweatshirt", "long_sleeve shirt", "hood_zip-up", "fleece_hoodie"],
+        "outerwear": ["Blouson", "Zip-Up_Knit", "denim-jacket",],
+        "tops": ["sweatshirt", "long_sleeve shirt", "hood_zip-up", "fleece_jacket", "normalKnit",],
         "bottoms": ["denim_pants", "chino-cotton", "Long_Skirt"],
-        "misc": ["stockings", "normalKnit", "one-piece_dress"]
+        "misc": ["one-piece_dress"]
     },
     "9~11": {
-        "outerwear": ["Blouson", "denim-jacket", "blazer", "trench_coat", "field_jacket", "jumper"],
+        "outerwear": ["Blouson", "denim-jacket", "blazer"],
         "tops": ["normalKnit"],
-        "bottoms": ["denim_pants", "chino-cotton", "layered", "fleece"],
-        "misc": ["one-piece_dress", "denim-shirts"]
+        "bottoms": ["denim_pants", "chino-cotton"],
+        "misc": ["one-piece_dress"]
     },
     "5~8": {
         "outerwear": ["wool_coat", "leather jacket"],
