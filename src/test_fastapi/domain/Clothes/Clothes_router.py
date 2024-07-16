@@ -69,8 +69,6 @@ async def Clothes_create(
     ):
     contents = await file.read()
 
-    if not Clothes_crud.image_doublecheck(db=db, image=contents, user_id=current_user.username):
-        raise HTTPException(status_code=400, detail="이미 존재하는 이미지 입니다.")
     nparr = np.frombuffer(contents, np.uint8)
     img_np = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
@@ -79,6 +77,9 @@ async def Clothes_create(
     # 이미지 직렬화 (예시: base64 인코딩)
     _, img_encoded = cv2.imencode('.png', img_no_bg)
     img_data = img_encoded.tobytes()
+
+    if not Clothes_crud.image_doublecheck(db = db, image = img_data, user_id = current_user.username):
+        raise HTTPException(status_code = 400, detail = "이미 존재하는 이미지 입니다.")
 
     clothe_data = {
         "image": img_data,  # 직렬화된 이미지

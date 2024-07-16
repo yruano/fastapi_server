@@ -69,8 +69,7 @@ def find_temperature_for_clothing(clothing_item):
 
 
 def image_doublecheck(db: Session, image: bytes, user_id: str):
-    encoded_image = base64.b64encode(image)
-    double_iamge = db.query(Clothes).filter(Clothes.User_Id == user_id, Clothes.Clothes_Image == encoded_image).first()
+    double_iamge = db.query(Clothes).filter(Clothes.User_Id == user_id, Clothes.Clothes_Image == image).first()
     if double_iamge is not None:
         return False
     return True
