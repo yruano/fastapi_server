@@ -147,8 +147,8 @@ def get_temperature_range(current_temperature):
 
 
 # 특정 옷에 대해서 추천
-async def Clothes_push(clothe_id: int, user_id: str, current_temperature: int, db: Session):
-    clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothe_id, Clothes.User_Id == user_id).first()
+async def Clothes_push_by_id(clothes_id: int, user_id: str, current_temperature: int, db: Session):
+    clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothes_id, Clothes.User_Id == user_id).first()
     if not clothe:
         return {"error": "Clothing item not found"}
 
@@ -164,7 +164,7 @@ async def Clothes_push(clothe_id: int, user_id: str, current_temperature: int, d
 
     # 현재 옷 중에서 잘 맞는 옷 카테고리
     nomination_cody = await cody.predict_category(category=clothe.Clothes_Category)
-    
+
     for category, items in recommendations.items():
         if category not in filtered_recommendations:
             continue
@@ -172,12 +172,12 @@ async def Clothes_push(clothe_id: int, user_id: str, current_temperature: int, d
             if any(predicted_color in item for predicted_color in clothe_color):
                 if category in nomination_cody:
                     filtered_recommendations[category].append(item)
-    
+
     return filtered_recommendations
 
 
 # 온도만 가지고 추천
-async def Clothes_push(user_id: str, current_temperature: int, db: Session):
+async def Clothes_push_by_temperature(user_id: str, current_temperature: int, db: Session):
     # 현재 온도에 맞는 바지 추천
     temperature_range = get_temperature_range(current_temperature)
     bottoms_recommendations = clothing_recommendations[temperature_range]["bottoms"]
