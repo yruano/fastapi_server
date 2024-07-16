@@ -118,10 +118,12 @@ def Clothes_delete(Clothes_id: int,
 
 @router.post("/matching", status_code = status.HTTP_200_OK)
 async def Clothes_matching(temperature: int, Clothes_id: int = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    print(temperature)
-    print(Clothes_id)
     if Clothes_id is not None:
         matching = await Clothes_crud.Clothes_push_by_id(clothes_id = Clothes_id, user_id = current_user.username, current_temperature = temperature, db = db)
     else:
         matching = await Clothes_crud.Clothes_push_by_temperature(user_id = current_user.username, current_temperature = temperature, db = db)
     return matching
+
+@router.post("/models", status_code = status.HTTP_200_OK)
+async def upload_files(c: str):
+    return await predict_category(category = c)
