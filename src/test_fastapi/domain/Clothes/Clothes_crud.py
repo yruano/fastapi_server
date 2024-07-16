@@ -1,4 +1,5 @@
 import base64
+import asyncio
 from datetime import datetime
 from models import Clothes
 from sqlalchemy.orm import Session
@@ -148,70 +149,86 @@ def get_temperature_range(current_temperature):
 
 # 특정 옷에 대해서 추천
 async def Clothes_push_by_id(clothes_id: int, user_id: str, current_temperature: int, db: Session):
-    clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothes_id, Clothes.User_Id == user_id).first()
-    if not clothe:
-        return {"error": "Clothing item not found"}
+    try:
+        clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothes_id, Clothes.User_Id == user_id).first()
+        if not clothe:
+            return {"error": "Clothing item not found"}
 
-    # 색 추천
-    clothe_color = await predictcolor.predict_color(color=clothe.Clothes_Color)
-    if "error" in clothe_color:
-        return clothe_color
+        # 색 추천
+        clothe_color = await predictcolor.predict_color(color = clothe.Clothes_Color)
+        if "error" in clothe_color:
+            return clothe_color
 
-    # 현재 온도에 맞는 옷 추천
-    temperature_range = get_temperature_range(current_temperature)
-    recommendations = clothing_recommendations.get(temperature_range, {})
-    filtered_recommendations = {"tops": [], "bottoms": [], "outerwear": []}
+        # 현재 온도에 맞는 옷 추천
+        temperature_range = get_temperature_range(current_temperature)
+        recommendations = clothing_recommendations.get(temperature_range, {})
+        filtered_recommendations = {"tops": [], "bottoms": [], "outerwear": []}
 
-    # 현재 옷 중에서 잘 맞는 옷 카테고리
-    nomination_cody = await cody.predict_category(category=clothe.Clothes_Category)
+        # 현재 옷 중에서 잘 맞는 옷 카테고리
+        nomination_cody = await cody.predict_category(category = clothe.Clothes_Category)
 
-    for category, items in recommendations.items():
-        if category not in filtered_recommendations:
-            continue
-        for item in items:
-            if any(predicted_color in item for predicted_color in clothe_color):
-                if category in nomination_cody:
-                    filtered_recommendations[category].append(item)
+        for category, items in recommendations.items():
+            if category not in filtered_recommendations:
+                continue
+            for item in items:
+                if any(predicted_color in item for predicted_color in clothe_color):
+                    if category in nomination_cody:
+                        filtered_recommendations[category].append(item)
 
-    return filtered_recommendations
+        return filtered_recommendations
+
+    finally:
+        db.close()
 
 
 # 온도만 가지고 추천
 async def Clothes_push_by_temperature(user_id: str, current_temperature: int, db: Session):
-    # 현재 온도에 맞는 바지 추천
-    temperature_range = get_temperature_range(current_temperature)
-    bottoms_recommendations = clothing_recommendations[temperature_range]["bottoms"]
+    try:
+        # 현재 온도에 맞는 바지 추천
+        temperature_range = get_temperature_range(current_temperature)
+        bottoms_recommendations = clothing_recommendations[temperature_range]["bottoms"]
 
-    # 사용자 바지 목록을 조회하여 카테고리와 색상 저장
-    clothe_category = {}
-    clothe_color = {}
+        # 사용자 바지 목록을 조회하여 카테고리와 색상 저장
+        clothe_category = {}
+        clothe_color = {}
 
-    for bottom in bottoms_recommendations:
-        clothe = db.query(Clothes).filter(Clothes.Clothes_Category == bottom, Clothes.User_Id == user_id).first()
-        if clothe:
-            if bottom not in clothe_category:
-                clothe_category[bottom] = []
-                clothe_color[bottom] = []
-            nomination_cody = await cody.predict_category(category=clothe.Clothes_Category)
-            clothe_category[bottom].append(nomination_cody)
-            clothe_color[bottom].append(clothe.Clothes_Color)
+        tasks = []
+        for bottom in bottoms_recommendations:
+            clothe = db.query(Clothes).filter(Clothes.Clothes_Category == bottom, Clothes.User_Id == user_id).first()
+            if clothe:
+                if bottom not in clothe_category:
+                    clothe_category[bottom] = []
+                    clothe_color[bottom] = []
 
-    # 온도에 맞는 전체 추천 목록 필터링
-    recommendations = clothing_recommendations.get(temperature_range, {})
-    filtered_recommendations = {"tops": [], "bottoms": [], "outerwear": []}
+                tasks.append(cody.predict_category(category = clothe.Clothes_Category))
+                clothe_category[bottom].append(clothe.Clothes_Category)
+                clothe_color[bottom].append(clothe.Clothes_Color)
 
-    for bottom, colors in clothe_color.items():
-        for color in colors:
-            predicted_colors = await predictcolor.predict_color(color=color)
-            if "error" in predicted_colors:
-                return predicted_colors
+        nomination_cody_results = await asyncio.gather(*tasks)
 
-            for category, items in recommendations.items():
-                filtered_items = []
-                for item in items:
-                    if any(predicted_color in item for predicted_color in predicted_colors):
-                        filtered_items.append(item)
-                if filtered_items:
-                    filtered_recommendations[category].extend(filtered_items)
+        # 바지 카테고리 및 색상과 추천 항목 매칭
+        recommendations = clothing_recommendations.get(temperature_range, {})
+        filtered_recommendations = {"tops": [], "bottoms": [], "outerwear": []}
 
-    return filtered_recommendations
+        tasks = []
+        for bottom, colors in clothe_color.items():
+            for color in colors:
+                tasks.append(predictcolor.predict_color(color = color))
+
+        predicted_colors_results = await asyncio.gather(*tasks)
+
+        for bottom, nomination_cody in zip(clothe_color.keys(), nomination_cody_results):
+            for predicted_colors in predicted_colors_results:
+                if "error" in predicted_colors:
+                    return predicted_colors
+                for category, items in recommendations.items():
+                    if category not in filtered_recommendations:
+                        filtered_recommendations[category] = []
+                    for item in items:
+                        if any(predicted_color in item for predicted_color in predicted_colors):
+                            if bottom in nomination_cody:
+                                filtered_recommendations[category].append(item)
+
+        return filtered_recommendations
+    finally:
+        db.close()
