@@ -112,7 +112,7 @@ def check_Clothes_data(category: str, clothe_id: int, db: Session, user_id: str)
     elif category is None and clothe_id is not None:
         clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothe_id, Clothes.User_Id == user_id).all()
     else:
-        clothe = db.query(Clothes).filter(Clothes.Clothes_Category == category, Clothes.Clothes_Id == clothe_id, Clothes.User_Id == user_id).all()
+        clothe = db.query(Clothes).filter(Clothes.Clothes_Category == category, Clothes.User_Id == user_id).all()
     return clothe
 
 
