@@ -154,7 +154,7 @@ async def Clothes_push_by_id(clothes_id: int, user_id: str, current_temperature:
             return {"error": "Clothing item not found"}
 
         # 색 추천
-        clothe_color = await predictcolor.predict_color(color = clothe.Clothes_Color)
+        clothe_color = await predictcolor.predict_color(color=clothe.Clothes_Color)
         if "error" in clothe_color:
             return clothe_color
 
@@ -163,23 +163,44 @@ async def Clothes_push_by_id(clothes_id: int, user_id: str, current_temperature:
         recommendations = clothing_recommendations.get(temperature_range, {})
         filtered_recommendations = {"tops": [], "bottoms": [], "outerwear": []}
 
+        # 특정 옷이 recommendations에 속해 있는지 확인
+        current_clothes_valid = False
+        for category, items in recommendations.items():
+            if clothe.Clothes_Category in items:
+                current_clothes_valid = True
+                break
+        
+        if not current_clothes_valid:
+            return 0
+
         # 현재 옷 중에서 잘 맞는 옷 카테고리
-        nomination_cody = await cody.predict_category(category = clothe.Clothes_Category)
+        nomination_cody = await cody.predict_category(category=clothe.Clothes_Category)
+
+        # 필요한 모든 옷 데이터를 한 번에 조회
+        all_clothes = db.query(Clothes).filter(Clothes.User_Id == user_id).all()
+        
+        # 카테고리와 색상별 옷을 조회하기 위한 딕셔너리 생성
+        clothes_lookup = {}
+        for cloth in all_clothes:
+            key = (cloth.Clothes_Category, cloth.Clothes_Color)
+            if key not in clothes_lookup:
+                clothes_lookup[key] = []
+            clothes_lookup[key].append(cloth.Clothes_Id)
 
         for category, items in recommendations.items():
             if category not in filtered_recommendations:
                 continue
             for item in items:
+                # 현재 옷 카테고리와 직접 매칭
                 if item == clothe.Clothes_Category:
                     filtered_recommendations[category].append(clothe.Clothes_Id)
-                for nomination in nomination_cody:
-                    if item == nomination:
-                        for predicted_color in clothe_color:
-                            nomination_clothe = db.query(Clothes).filter(Clothes.Clothes_Category == item, Clothes.Clothes_Color == predicted_color, Clothes.User_Id == user_id).first()
-                            if not nomination_clothe:
-                                continue
-                            else:
-                                filtered_recommendations[category].append(nomination_clothe.Clothes_Id)
+                
+                # 추천 카테고리와 예측된 색상과 매칭
+                if item in nomination_cody:
+                    for predicted_color in clothe_color:
+                        key = (item, predicted_color)
+                        if key in clothes_lookup:
+                            filtered_recommendations[category].extend(clothes_lookup[key])
 
         return filtered_recommendations
 

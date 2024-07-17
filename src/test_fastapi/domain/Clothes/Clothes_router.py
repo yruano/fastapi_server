@@ -121,6 +121,8 @@ def Clothes_delete(Clothes_id: int,
 async def Clothes_matching(temperature: int, Clothes_id: int = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     if Clothes_id is not None:
         matching = await Clothes_crud.Clothes_push_by_id(clothes_id = Clothes_id, user_id = current_user.username, current_temperature = temperature, db = db)
+        if matching == 0:
+            raise HTTPException(status_code = 400, detail = "선택하신 옷은 현재 온도에 맞지 않습니다.")
     else:
         matching = await Clothes_crud.Clothes_push_by_temperature(user_id = current_user.username, current_temperature = temperature, db = db)
     return matching
