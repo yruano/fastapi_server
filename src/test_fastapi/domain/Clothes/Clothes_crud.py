@@ -215,15 +215,15 @@ async def Clothes_push_by_temperature(user_id: str, current_temperature: int, db
 
         # 추천 아이템 필터링
         recommendations = clothing_recommendations.get(temperature_range, {})
-        filtered_recommendations = {"tops": [], "bottoms": [], "outerwear": []}
+        filtered_recommendations = {}
 
         for category, items in recommendations.items():
-            if category not in filtered_recommendations:
-                continue
             for item in items:
                 for clothe in clothe_copy:
-                    if item == clothe.Clothes_Category:
-                        filtered_recommendations[category].append(clothe.Clothes_Id)
+                    if clothe.Clothes_Id not in filtered_recommendations and clothe.Clothes_Category == item:
+                        filtered_recommendations[clothe.Clothes_Id] = {"tops": [], "bottoms": [], "outerwear": []}
+                        filtered_recommendations[clothe.Clothes_Id][category].append(clothe.Clothes_Id)
+                    
                     if clothe.Clothes_Id in category_results:
                         for results in category_results[clothe.Clothes_Id]:
                             if item == results and clothe.Clothes_Id in color_results:
@@ -233,9 +233,11 @@ async def Clothes_push_by_temperature(user_id: str, current_temperature: int, db
                                         Clothes.Clothes_Color == color,
                                         Clothes.User_Id == user_id
                                     ).first()
-                                    if clothe_match:
-                                        filtered_recommendations[category].append(clothe_match.Clothes_Id)
+                                    if clothe_match and clothe_match.Clothes_Id not in filtered_recommendations[clothe.Clothes_Id][category]:
+                                        filtered_recommendations[clothe.Clothes_Id][category].append(clothe_match.Clothes_Id)
 
+        # bottoms 리스트가 비어있는 항목 제거
+        filtered_recommendations = {id: items for id, items in filtered_recommendations.items() if len(items["bottoms"]) > 0}
         return filtered_recommendations
 
     finally:
