@@ -75,11 +75,11 @@ async def analyze_image(file: File):
 
     # 분석 결과를 JSON 형식으로 변환
     results_json = results[0].tojson()
-    
+    print(results_json)
     # JSON 데이터 파싱
     results_data = json.loads(results_json)
     
     # name 필드만 추출하여 출력
     detected_names = [item["name"] for item in results_data]
-    
+    print(detected_names)
     return detected_names[0]

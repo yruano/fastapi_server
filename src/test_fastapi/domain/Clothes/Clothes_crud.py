@@ -17,19 +17,19 @@ clothing_recommendations = {
     "23~27": {
         "outerwear": [],
         "tops": ["short_sleeve shirt", "long_sleeve shirt", "normalKnit", "short_sleeves", "short_sleeves_knit"],
-        "bottoms": ["chino-cotton", "half_pants", "Short_Skirt"],
+        "bottoms": ["chino-cotton", "half_pants", "Short_Skirt","training-jogger_pants"],
         "misc": []
     },
     "20~22": {
         "outerwear": [],
         "tops": ["long_sleeve shirt", "hood", "hood_zip-up", "normalKnit"],
-        "bottoms": ["chino-cotton", "denim_pants", "slacks", "half_pants", "Long_Skirt"],
+        "bottoms": ["chino-cotton", "denim_pants", "slacks", "half_pants", "Long_Skirt","training-jogger_pants"],
         "misc": ["denim-shirts"]
     },
     "17~19": {
         "outerwear": ["Windbreaker", "Blouson", "Zip-Up_Knit","blazer"],
         "tops": ["hood", "sweatshirt", "normalKnit"],
-        "bottoms": ["chino-cotton", "denim_pants", "slacks", "Long_Skirt"],
+        "bottoms": ["chino-cotton", "denim_pants", "slacks", "Long_Skirt","training-jogger_pants"],
         "misc": ["denim-shirts"]
     },
     "12~16": {

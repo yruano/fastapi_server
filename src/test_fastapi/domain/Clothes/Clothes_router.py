@@ -100,9 +100,9 @@ async def upload_files(file: UploadFile):
     # color_extraction에 사용할 파일을 읽기
     color_copy = copy.deepcopy(file)
 
-    img = Image.open(color_copy.file)
-    width, height = img.size
-    print(f"Width: {width}, Height: {height}")
+    # img = Image.open(color_copy.file)
+    # width, height = img.size
+    # print(f"Width: {width}, Height: {height}")
 
     results = await analyze_image(file = category_copy)
     color = color_extraction(file = color_copy)
