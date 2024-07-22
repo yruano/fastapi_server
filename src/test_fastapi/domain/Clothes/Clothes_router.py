@@ -126,7 +126,3 @@ async def Clothes_matching(temperature: int, Clothes_id: int = None, current_use
     else:
         matching = await Clothes_crud.Clothes_push_by_temperature(user_id = current_user.username, current_temperature = temperature, db = db)
     return matching
-
-@router.post("/models", status_code = status.HTTP_200_OK)
-async def upload_files(c: str):
-    return await predict_category(category = c)

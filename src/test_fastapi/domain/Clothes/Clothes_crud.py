@@ -4,6 +4,7 @@ from datetime import datetime
 from models import Clothes
 from sqlalchemy.orm import Session
 from learning_model import predictcolor, cody
+from typing import Dict, List, Union
 
 
 # 기준 : https://namu.wiki/w/%EA%B8%B0%EC%98%A8%EB%B3%84%20%EC%98%B7%EC%B0%A8%EB%A6%BC
@@ -147,39 +148,59 @@ def get_temperature_range(current_temperature):
 
 
 # 특정 옷에 대해서 추천
-async def Clothes_push_by_id(clothes_id: int, user_id: str, current_temperature: int, db: Session):
+async def Clothes_push_by_id(
+    clothes_id: int, 
+    user_id: str, 
+    current_temperature: int, 
+    db: Session
+) -> Union[Dict[str, Union[str, int]], Dict[str, List[int]]]:
+    async def fetch_predict_color(clothe_color: str) -> Dict[str, str]:
+        try:
+            return await predictcolor.predict_color(color=clothe_color)
+        except Exception as e:
+            return {"error": str(e)}
+
+    async def fetch_predict_category(category: str) -> List[str]:
+        try:
+            return await cody.predict_category(category=category)
+        except Exception as e:
+            return {"error": str(e)}
+
     try:
-        clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothes_id, Clothes.User_Id == user_id).first()
+        # 옷 아이템 조회
+        clothe = db.query(Clothes).filter(
+            Clothes.Clothes_Id == clothes_id,
+            Clothes.User_Id == user_id
+        ).first()
+        
         if not clothe:
             return {"error": "Clothing item not found"}
 
-        # 색 추천
-        clothe_color = await predictcolor.predict_color(color=clothe.Clothes_Color)
-        if "error" in clothe_color:
-            return clothe_color
+        # 색상 예측
+        clothe_color_result = await fetch_predict_color(clothe.Clothes_Color)
+        if "error" in clothe_color_result:
+            return clothe_color_result
 
-        # 현재 온도에 맞는 옷 추천
+        # 현재 온도에 맞는 옷 추천 범위 조회
         temperature_range = get_temperature_range(current_temperature)
         recommendations = clothing_recommendations.get(temperature_range, {})
         filtered_recommendations = {"tops": [], "bottoms": [], "outerwear": []}
 
-        # 특정 옷이 recommendations에 속해 있는지 확인
-        current_clothes_valid = False
-        for category, items in recommendations.items():
-            if clothe.Clothes_Category in items:
-                current_clothes_valid = True
-                break
-        
-        if not current_clothes_valid:
+        # 현재 옷이 추천 리스트에 포함되는지 확인
+        if clothe.Clothes_Category not in [item for sublist in recommendations.values() for item in sublist]:
             return 0
 
-        # 현재 옷 중에서 잘 맞는 옷 카테고리
-        nomination_cody = await cody.predict_category(category=clothe.Clothes_Category)
+        # 옷 카테고리 예측
+        nomination_cody = await fetch_predict_category(clothe.Clothes_Category)
+        if "error" in nomination_cody:
+            return nomination_cody
 
-        # 필요한 모든 옷 데이터를 한 번에 조회
-        all_clothes = db.query(Clothes).filter(Clothes.User_Id == user_id).all()
-        
-        # 카테고리와 색상별 옷을 조회하기 위한 딕셔너리 생성
+        # 사용자의 모든 옷 데이터 조회
+        all_clothes = db.query(Clothes).filter(
+            Clothes.User_Id == user_id
+        ).all()
+
+        # 카테고리와 색상별 옷 데이터를 딕셔너리에 저장
         clothes_lookup = {}
         for cloth in all_clothes:
             key = (cloth.Clothes_Category, cloth.Clothes_Color)
@@ -187,6 +208,7 @@ async def Clothes_push_by_id(clothes_id: int, user_id: str, current_temperature:
                 clothes_lookup[key] = []
             clothes_lookup[key].append(cloth.Clothes_Id)
 
+        # 추천 리스트 필터링
         for category, items in recommendations.items():
             if category not in filtered_recommendations:
                 continue
@@ -195,15 +217,18 @@ async def Clothes_push_by_id(clothes_id: int, user_id: str, current_temperature:
                 if item == clothe.Clothes_Category:
                     filtered_recommendations[category].append(clothe.Clothes_Id)
                 
-                # 추천 카테고리와 예측된 색상과 매칭
+                # 추천 카테고리와 예측된 색상 매칭
                 if item in nomination_cody:
-                    for predicted_color in clothe_color:
+                    for predicted_color in clothe_color_result:
                         key = (item, predicted_color)
                         if key in clothes_lookup:
                             filtered_recommendations[category].extend(clothes_lookup[key])
 
         return filtered_recommendations
 
+    except Exception as e:
+        return {"error": str(e)}
+    
     finally:
         db.close()
 
@@ -213,26 +238,28 @@ async def Clothes_push_by_temperature(user_id: str, current_temperature: int, db
     try:
         # 현재 온도에 맞는 상의 추천
         temperature_range = get_temperature_range(current_temperature)
-        tops_recommendations = clothing_recommendations[temperature_range]["tops"]
+        tops_recommendations = clothing_recommendations.get(temperature_range, {}).get("tops", [])
 
         # 사용자 상의 목록을 조회하여 카테고리와 색상 저장
         clothe_copy = []
-
         for top in tops_recommendations:
-            clothes = db.query(Clothes).filter(Clothes.Clothes_Category == top, Clothes.User_Id == user_id).all()
-            for clothe in clothes:
-                if clothe:
-                    clothe_copy.append(clothe)
+            clothes = db.query(Clothes).filter(
+                Clothes.Clothes_Category == top, 
+                Clothes.User_Id == user_id
+            ).all()
+            clothe_copy.extend(clothes)
 
         # 비동기적으로 카테고리 예측 작업 수행
-        category_tasks = [(clothe.Clothes_Id, cody.predict_category(category=clothe.Clothes_Category)) for clothe in clothe_copy]
-        category_results = await asyncio.gather(*[task for _, task in category_tasks])
-        category_results = {clothe_id: result for (clothe_id, _), result in zip(category_tasks, category_results)}
+        category_results = await asyncio.gather(
+            *(cody.predict_category(category=clothe.Clothes_Category) for clothe in clothe_copy)
+        )
+        category_results_dict = dict(zip((clothe.Clothes_Id for clothe in clothe_copy), category_results))
 
         # 비동기적으로 색상 예측 작업 수행
-        color_tasks = [(clothe.Clothes_Id, predictcolor.predict_color(color=clothe.Clothes_Color)) for clothe in clothe_copy]
-        color_results = await asyncio.gather(*[task for _, task in color_tasks])
-        color_results = {clothe_id: result for (clothe_id, _), result in zip(color_tasks, color_results)}
+        color_results = await asyncio.gather(
+            *(predictcolor.predict_color(color=clothe.Clothes_Color) for clothe in clothe_copy)
+        )
+        color_results_dict = dict(zip((clothe.Clothes_Id for clothe in clothe_copy), color_results))
 
         # 추천 아이템 필터링
         recommendations = clothing_recommendations.get(temperature_range, {})
@@ -244,21 +271,28 @@ async def Clothes_push_by_temperature(user_id: str, current_temperature: int, db
                     if clothe.Clothes_Id not in filtered_recommendations and clothe.Clothes_Category == item:
                         filtered_recommendations[clothe.Clothes_Id] = {"tops": [], "bottoms": [], "outerwear": []}
                         filtered_recommendations[clothe.Clothes_Id][category].append(clothe.Clothes_Id)
-                    
-                    if clothe.Clothes_Id in category_results:
-                        for results in category_results[clothe.Clothes_Id]:
-                            if item == results and clothe.Clothes_Id in color_results:
-                                for color in color_results[clothe.Clothes_Id]:
-                                    clothe_match = db.query(Clothes).filter(
-                                        Clothes.Clothes_Category == item,
-                                        Clothes.Clothes_Color == color,
-                                        Clothes.User_Id == user_id
-                                    ).first()
-                                    if clothe_match and clothe_match.Clothes_Id not in filtered_recommendations[clothe.Clothes_Id][category]:
+
+                    if clothe.Clothes_Id in category_results_dict:
+                        predicted_categories = category_results_dict.get(clothe.Clothes_Id, [])
+                        if item in predicted_categories and clothe.Clothes_Id in color_results_dict:
+                            predicted_colors = color_results_dict.get(clothe.Clothes_Id, [])
+                            for color in predicted_colors:
+                                clothe_match = db.query(Clothes).filter(
+                                    Clothes.Clothes_Category == item,
+                                    Clothes.Clothes_Color == color,
+                                    Clothes.User_Id == user_id
+                                ).first()
+                                if clothe_match:
+                                    if clothe.Clothes_Id not in filtered_recommendations:
+                                        filtered_recommendations[clothe.Clothes_Id] = {"tops": [], "bottoms": [], "outerwear": []}
+                                    if clothe_match.Clothes_Id not in filtered_recommendations[clothe.Clothes_Id][category]:
                                         filtered_recommendations[clothe.Clothes_Id][category].append(clothe_match.Clothes_Id)
 
         # bottoms 리스트가 비어있는 항목 제거
-        filtered_recommendations = {id: items for id, items in filtered_recommendations.items() if len(items["bottoms"]) > 0}
+        filtered_recommendations = {
+            id: items for id, items in filtered_recommendations.items() if len(items["bottoms"]) > 0
+        }
+
         return filtered_recommendations
 
     finally:
