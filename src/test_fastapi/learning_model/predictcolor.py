@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
 
-async def predict_color(color: str):
+def predict_color(color: str):
     # 모델 로드
     ColorCombination_model = tf.keras.models.load_model('color_model240603.h5')
 

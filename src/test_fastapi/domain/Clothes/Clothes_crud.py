@@ -127,7 +127,7 @@ def delete_Clothes_data(db: Session, user_id: str, Clothes_id: int):
         return False
 
 
-def get_temperature_range(current_temperature):
+def get_temperature_range(current_temperature) -> str:
     if current_temperature >= 28:
         return "28~"
     elif 23 <= current_temperature <= 27:
@@ -144,7 +144,7 @@ def get_temperature_range(current_temperature):
         return "5~8"
     elif current_temperature <= 4:
         return "~4"
-    return None
+    return ""
 
 
 # 특정 옷에 대해서 추천
@@ -156,13 +156,13 @@ async def Clothes_push_by_id(
 ) -> Union[Dict[str, Union[str, int]], Dict[str, List[int]]]:
     async def fetch_predict_color(clothe_color: str) -> Dict[str, str]:
         try:
-            return await predictcolor.predict_color(color=clothe_color)
+            return predictcolor.predict_color(color=clothe_color)
         except Exception as e:
             return {"error": str(e)}
 
     async def fetch_predict_category(category: str) -> List[str]:
         try:
-            return await cody.predict_category(category=category)
+            return cody.predict_category(category=category)
         except Exception as e:
             return {"error": str(e)}
 
@@ -250,15 +250,11 @@ async def Clothes_push_by_temperature(user_id: str, current_temperature: int, db
             clothe_copy.extend(clothes)
 
         # 비동기적으로 카테고리 예측 작업 수행
-        category_results = await asyncio.gather(
-            *(cody.predict_category(category=clothe.Clothes_Category) for clothe in clothe_copy)
-        )
+        category_results = [cody.predict_category(category=clothe.Clothes_Category) for clothe in clothe_copy]
         category_results_dict = dict(zip((clothe.Clothes_Id for clothe in clothe_copy), category_results))
 
         # 비동기적으로 색상 예측 작업 수행
-        color_results = await asyncio.gather(
-            *(predictcolor.predict_color(color=clothe.Clothes_Color) for clothe in clothe_copy)
-        )
+        color_results = [predictcolor.predict_color(color=clothe.Clothes_Color) for clothe in clothe_copy]
         color_results_dict = dict(zip((clothe.Clothes_Id for clothe in clothe_copy), color_results))
 
         # 추천 아이템 필터링

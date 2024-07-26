@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
 
-async def predict_category(category: str):
+def predict_category(category: str):
     # 레이블 인코더 로드
     le_tops = LabelEncoder()
     le_bottoms = LabelEncoder()
