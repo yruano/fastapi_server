@@ -1,6 +1,5 @@
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
-from pydantic import EmailStr
 from domain.user.user_schema import UserCreate, UserModify
 from models import User
 
@@ -8,7 +7,7 @@ from models import User
 pwd_context = CryptContext(schemes = ["bcrypt"], deprecated = "auto")
 
 
-def create_user(db: Session, user_create: UserCreate):
+def create_user(db: Session, user_create: UserCreate) -> str:
     db_user = User(username = user_create.username,
                    password = pwd_context.hash(user_create.password1),
                    User_NickName = user_create.User_NickName,

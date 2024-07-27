@@ -2,7 +2,6 @@ import base64
 from pydantic import EmailStr
 from datetime import timedelta, datetime
 from fastapi import APIRouter, HTTPException, UploadFile, File, Depends, Form
-from typing import Optional
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from jose import jwt, JWTError
 from sqlalchemy.orm import Session
@@ -31,16 +30,16 @@ async def user_create(
                     password1: str = Form(...),
                     password2: str = Form(...),
                     User_NickName: str = Form(...),
-                    User_Instagram_ID: Optional[str] = Form(""),
-                    User_Age: Optional[int] = Form(0),
-                    file: Optional[UploadFile] = File(None),
+                    User_Instagram_ID: str = Form(""),
+                    User_Age: int = Form(0),
+                    file: UploadFile = File(None),
                     db: Session = Depends(get_db)
                 ):
+    encoded_image = b""
+
     if file:
         contents = await file.read()
         encoded_image = base64.b64encode(contents)
-    else:
-        encoded_image = None
 
     _user_create = user_schema.UserCreate(
         username = username,
@@ -57,7 +56,7 @@ async def user_create(
         raise HTTPException(status_code = status.HTTP_409_CONFLICT,
                             detail="이미 존재하는 사용자입니다.")
 
-    user_name = user_crud.create_user(db = db, user_create = _user_create)
+    user_crud.create_user(db = db, user_create = _user_create)
 
 
 @router.post("/login", response_model = user_schema.Token)
@@ -99,8 +98,6 @@ def get_current_user(token: str = Depends(oauth2_scheme),
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms = [ALGORITHM])
         username: str = payload.get("sub")
-        if username is None:
-            raise credentials_exception
     except JWTError:
         raise credentials_exception
     else:
@@ -122,17 +119,17 @@ async def user_modify(
                     password1: str = Form(""),
                     password2: str = Form(""),
                     User_NickName: str = Form(""),
-                    User_Instagram_ID: Optional[str] = Form(""),
-                    User_Age: Optional[int] = Form(0),
-                    file: Optional[UploadFile] = File(None),
+                    User_Instagram_ID: str = Form(""),
+                    User_Age: int = Form(0),
+                    file: UploadFile = File(None),
                     db: Session = Depends(get_db),
                     _current_user: user_schema.User = Depends(get_current_user)
                     ):
+    encoded_image = b""
+
     if file:
         contents = await file.read()
         encoded_image = base64.b64encode(contents)
-    else:
-        encoded_image = ""
 
     _user_modify = user_schema.UserModify(
         password1 = password1,
