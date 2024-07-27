@@ -1,5 +1,4 @@
 import base64
-import asyncio
 from datetime import datetime
 from models import Clothes
 from sqlalchemy.orm import Session
@@ -63,7 +62,7 @@ clothing_recommendations = {
 def find_temperature_for_clothing(clothing_item):
     results = []
     for temperature, categories in clothing_recommendations.items():
-        for category, items in categories.items():
+        for _, items in categories.items():
             if clothing_item in items:
                 results.append(temperature)
     return results
@@ -107,12 +106,15 @@ def modify_Clothes(user_id: str, modify_clothe: Clothes, db: Session):
 
 
 def check_Clothes_data(category: str, clothe_id: int, db: Session, user_id: str):
-    if category is None and clothe_id is None:
-        clothe = db.query(Clothes).filter(Clothes.User_Id == user_id).all()
-    elif category is None and clothe_id is not None:
-        clothe = db.query(Clothes).filter(Clothes.Clothes_Id == clothe_id, Clothes.User_Id == user_id).all()
-    else:
-        clothe = db.query(Clothes).filter(Clothes.Clothes_Category == category, Clothes.User_Id == user_id).all()
+    query = db.query(Clothes).filter(Clothes.User_Id == user_id)
+    
+    if clothe_id is not None:
+        query = query.filter(Clothes.Clothes_Id == clothe_id)
+    
+    if category is not None:
+        query = query.filter(Clothes.Clothes_Category == category)
+    
+    clothe = query.all()
     return clothe
 
 
