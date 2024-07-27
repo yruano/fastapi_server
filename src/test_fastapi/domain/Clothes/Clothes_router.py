@@ -1,7 +1,6 @@
 import base64
 import copy
-from pydantic import EmailStr
-from fastapi import APIRouter, Depends, UploadFile, File, Form, BackgroundTasks
+from fastapi import APIRouter, Depends, UploadFile, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import Optional
 import numpy as np
@@ -16,9 +15,6 @@ from fastapi import HTTPException
 
 from learning_model.judgment_of_clothes import analyze_image
 from learning_model.discrimination_color import color_extraction
-from learning_model.cody import predict_category
-from learning_model.predictcolor import predict_color
-from PIL import Image
 
 
 router = APIRouter(
@@ -27,8 +23,8 @@ router = APIRouter(
 
 
 @router.get("/check")
-def Clothes_check(Clothe_category: str = None, 
-                Clothe_id: int = None, 
+def Clothes_check(Clothe_category: str = "", 
+                Clothe_id: int = -1, 
                 current_user: User = Depends(get_current_user), 
                 db: Session = Depends(get_db)):
     clothe = Clothes_crud.check_Clothes_data(category = Clothe_category, clothe_id = Clothe_id, db = db, user_id = current_user.username)
@@ -55,7 +51,7 @@ async def Clothe_modify(clothe_id: int,
     clothe.Clothes_Id = clothe_id
     clothe.Clothes_Color = color_extraction(file = file)
 
-    clothe = Clothes_crud.modify_Clothes(user_id = User.username, modify_clothe = clothe, db = db)
+    clothe = Clothes_crud.modify_Clothes(user_id = current_user.username, modify_clothe = clothe, db = db)
     return clothe
 
 
@@ -111,15 +107,18 @@ async def upload_files(file: UploadFile):
 def Clothes_delete(Clothes_id: int,
                 current_user: User = Depends(get_current_user), 
                 db: Session = Depends(get_db)):
-    clothe = Clothes_crud.delete_Clothes_data(db = db, user_id = current_user.username, Clothes_id = Clothes_id)
+    Clothes_crud.delete_Clothes_data(db = db, user_id = current_user.username, Clothes_id = Clothes_id)
 
 
 @router.post("/matching", status_code = status.HTTP_200_OK)
-async def Clothes_matching(temperature: int, Clothes_id: int = None, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    if Clothes_id is not None:
-        matching = await Clothes_crud.Clothes_push_by_id(clothes_id = Clothes_id, user_id = current_user.username, current_temperature = temperature, db = db)
+async def Clothes_matching(temperature: int, Clothes_id: int = -1, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    user_id = current_user.username
+    
+    if Clothes_id is not -1:
+        matching = await Clothes_crud.Clothes_push_by_id( clothes_id = Clothes_id, user_id = user_id, current_temperature = temperature, db = db)
         if matching == 0:
             raise HTTPException(status_code = 400, detail = "선택하신 옷은 현재 온도에 맞지 않습니다.")
     else:
-        matching = await Clothes_crud.Clothes_push_by_temperature(user_id = current_user.username, current_temperature = temperature, db = db)
+        matching = await Clothes_crud.Clothes_push_by_temperature(user_id = user_id, current_temperature = temperature, db = db)
+    
     return matching

@@ -108,10 +108,10 @@ def modify_Clothes(user_id: str, modify_clothe: Clothes, db: Session):
 def check_Clothes_data(category: str, clothe_id: int, db: Session, user_id: str):
     query = db.query(Clothes).filter(Clothes.User_Id == user_id)
     
-    if clothe_id is not None:
+    if clothe_id is not -1:
         query = query.filter(Clothes.Clothes_Id == clothe_id)
     
-    if category is not None:
+    if category is not "":
         query = query.filter(Clothes.Clothes_Category == category)
     
     clothe = query.all()
