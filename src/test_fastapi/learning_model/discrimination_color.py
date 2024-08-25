@@ -1,7 +1,5 @@
 import numpy as np
 from PIL import Image
-import webcolors
-from skimage import color
 from rembg import remove
 import math
 from sklearn.cluster import KMeans

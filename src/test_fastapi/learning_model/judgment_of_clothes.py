@@ -6,17 +6,10 @@
 # 일단 스스로 무언가 학습을 하고 무언가 만들고 있어 이게 맞나?
 import cv2
 import json
-import extcolors
-import webcolors
 import numpy as np
 from rembg import remove
-from PIL import Image
 from ultralytics import YOLO
-from sklearn.cluster import KMeans
 from fastapi import File
-from skimage import color
-from colormath.color_diff import delta_e_cie2000
-from colormath.color_objects import LabColor
 
 color_groups_custom = {
     "white": ["lavender","aliceblue","honeydew","azure","whitesmoke","mintcream","gainsboro","ghostwhite","oldlace","mistyrose","lavenderblush","seashell","snow","white",],  #흰색
