@@ -12,8 +12,8 @@ from domain.user.user_crud import pwd_context
 
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
-SECRET_KEY = "4ab2fce7a6bd79e1c014396315ed322dd6edb1c5d975c6b74a2904135172c03c"
-ALGORITHM = "HS256"
+SECRET_KEY = "JWT_SECRET"
+ALGORITHM = "ALGORITHM_SECRET"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl = "/api/user/login")
 
 router = APIRouter(
